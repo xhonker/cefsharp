@@ -5,8 +5,45 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:newCRM"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid>
+        Title="览益CRM" Height="680" Width="1210"
+        Loaded="Window_Loaded" Closed="Window_Closed"
+        Activated="Window_Activated"
+        Deactivated="Window_Deactivated"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="ToolWindow"
+        ResizeMode="NoResize"
+        Icon="assets/icon.ico" 
         
+        >
+    <Window.Resources>
+        <Style x:Key="btn_close" TargetType="Button"> 
+            <Setter Property="Template">
+                <!--去掉默认的背景-->
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Image Source="assets/close.png"></Image>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid Name="main">
+        <Popup Name="popup" IsOpen="False" MouseDown="popup_MouseDown" > 
+            <Grid Width="260" Height="99">
+                <Grid.Background>
+                        <ImageBrush Stretch="Fill" ImageSource="assets/bg_popup.png" />
+                    </Grid.Background>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="2*"/>
+                    <RowDefinition Height="10*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="10*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                <Button Name="close" Grid.Column="1"  Style="{StaticResource btn_close}"  Margin="0,0,-5,0"  Height="20" Click="close_Click"/>
+                <TextBlock Name="msg_content" Grid.ColumnSpan="2"  Foreground="White" FontSize="14"  Grid.Row="2" HorizontalAlignment="Center" TextWrapping="Wrap" Margin="5"></TextBlock>
+            </Grid>
+        </Popup>
     </Grid>
 </Window>
