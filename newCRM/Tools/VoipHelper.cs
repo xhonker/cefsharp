@@ -251,5 +251,33 @@ namespace newCRM.Tools
         {
             return BriSDKLib.QNV_General(0, BriSDKLib.QNV_GENERAL_STOPREFUSE, 0, "");
         }
+        /// <summary>
+        /// 写入日志
+        /// </summary>
+        /// <param name="strLog"></param>
+        public static void WriteLog(string strLog)
+        {
+            FileStream fs;
+            StreamWriter sw;
+            string FilePath = AppDomain.CurrentDomain.BaseDirectory + "log\\" + DateTime.Now.Year + "\\" + DateTime.Now.Month;
+            string FileName = DateTime.Now.ToString("dd") + ".log";
+            FileName = FilePath + "\\" + FileName;
+            if (!System.IO.Directory.Exists(FilePath))
+            {
+                System.IO.Directory.CreateDirectory(FilePath);
+            }
+            if (File.Exists(FileName))
+            {
+                fs = new FileStream(FileName, FileMode.Append, FileAccess.Write);
+            }
+            else
+            {
+                fs = new FileStream(FileName, FileMode.Create, FileAccess.Write);
+            }
+            sw = new StreamWriter(fs);
+            sw.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " ---- " + strLog);
+            sw.Close();
+            fs.Close();
+        }
     }
 }

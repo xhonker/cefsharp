@@ -22,7 +22,6 @@ namespace newCRM
             VoipHelper.Call(phone);
             VoipHelper.OffOnHook(1);
             VoipHelper.lineToSpk(1);
-
         }
         /// <summary>
         /// 接听来电
@@ -41,24 +40,10 @@ namespace newCRM
         /// code =200 成功 其他失败
         /// </summary>
         /// <returns>{code:number,msg:string}</returns>
-        public string stopTalk()
+        public void stopTalk()
         {
-            try
-            {
-                if (VoipHelper.OffOnHook(0) < 0)
-                {
-                    //result.code = -1;
-                    //result.msg = "挂机失败";
-                }
-                VoipHelper.lineToSpk(0);
-            }
-            catch (System.Exception err)
-            {
-                //result.code = -1;
-                //result.msg = err.Message;
-            }
-            //return JsonHelper.Jsons(result);
-            return "";
+            VoipHelper.OffOnHook(0);
+            VoipHelper.lineToSpk(0);
         }
         /// <summary>
         /// 风险提示
@@ -67,8 +52,6 @@ namespace newCRM
         {
             if (VoipHelper.playHandle <= 0)
             {
-                //VoipHelper.lineToSpk(0);
-                //VoipHelper.domicToLine(0);
                 VoipHelper.playHandle = VoipHelper.PlayVoice(VoipHelper.PLAYFILEPATH);
             }
         }
@@ -96,7 +79,7 @@ namespace newCRM
             //}
             //else
             //{
-            // var t =   VoipHelper.refuseCurrentIncoming();
+            //    var t = VoipHelper.refuseCurrentIncoming();
             //    Debug.WriteLine("拒接来电" + t);
             //}
         }
@@ -113,15 +96,13 @@ namespace newCRM
         /// <summary>
         /// 统一消息接收
         /// </summary>
-        /// <param name="msg"></param>
+        /// <param name="msg">DispacthMsg</param>
         public void dispacthMsg(string msg)
         {
 
             if (!string.IsNullOrEmpty(msg))
             {
                 var jsonMsg = JsonHelper.JsonDeserialize<DispacthMsg>(msg);
-                Debug.WriteLine("[action]==>>" + msg);
-                //Debug.WriteLine("[payload]==>>"+jsonMsg.payload);
                 if (jsonMsg.action != null)
                 {
                     switch (jsonMsg.action)

@@ -47,7 +47,11 @@ namespace newCRM
         /// 浏览器
         /// </summary>
         public static ChromiumWebBrowser browser;
+        /// <summary>
+        /// 处理CRM系统消息 引用this
+        /// </summary>
         public static MainWindow form;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -59,7 +63,7 @@ namespace newCRM
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             string serverAddress = ConfigurationManager.AppSettings["server"];
-             
+
             #region browser
             #region 初始化环境 禁用gpu 防止闪烁
             var setting = new CefSharp.CefSettings();
@@ -70,20 +74,24 @@ namespace newCRM
             #endregion
             browser = new ChromiumWebBrowser();
             //browser.Address = System.AppDomain.CurrentDomain.BaseDirectory + "index.html";
-            browser.PreviewTextInput += Browser_PreviewTextInput; // 解决input框无法输入中文的BUG
+            // 解决input框无法输入中文的BUG
+            browser.PreviewTextInput += Browser_PreviewTextInput;
+
             browser.Address = serverAddress;
 
             browser.LifeSpanHandler = new prohibitNewPageJump();
             //browser.Address = "http://ie.icoa.cn";
             //注册JS调用函数
             browser.RegisterJsObject("__phone", new CallBackForJs());
-
+            // 菜单处理事件
             browser.MenuHandler = new MenuHandler();
-
+            // 下载处理事件
             browser.DownloadHandler = new browerDownLoad();
 
             this.main.Children.Add(browser);
-            
+            // 浏览器按键事件
+            browser.KeyDown += Browser_KeyDown;
+
             #endregion
 
             #region 盒子初始化
@@ -101,6 +109,7 @@ namespace newCRM
             }
             VoipHelper.init();
             #endregion
+
             #region 上传录音
             uploadRecordingFile = new BackgroundWorker();
             uploadRecordingFile.DoWork += uploadRecordingFile_DoWork;
@@ -108,6 +117,8 @@ namespace newCRM
             uploadRecordingFile.RunWorkerAsync();
             #endregion 
         }
+
+
 
         /// <summary>
         /// 解决input框无法输入中文的BUG
@@ -122,8 +133,6 @@ namespace newCRM
             }
             e.Handled = true;
         }
-
-
 
         /// <summary>
         /// 禁止页面跳转
@@ -172,6 +181,7 @@ namespace newCRM
         /// <param name="e"></param>
         private void uploadRecordingFile_DoWork(object sender, DoWorkEventArgs e)
         {
+            #region 遍历工作目录下的record
             var fileList = Directory.GetFileSystemEntries(System.IO.Path.GetFullPath(".."));
             DirectoryInfo dir = new DirectoryInfo(System.IO.Path.GetFullPath(".."));
             foreach (DirectoryInfo info in dir.GetDirectories())
@@ -204,8 +214,10 @@ namespace newCRM
                         }
                     }
                 }
-            } 
+            }
+            #endregion
 
+            #region 遍历工作目录、录音文件目录
             //var fileList = Directory.GetFiles(VoipHelper.recordPath);
 
             //DirectoryInfo dir = new DirectoryInfo(VoipHelper.recordPath);
@@ -238,6 +250,8 @@ namespace newCRM
 
             //    }
             //}
+            #endregion
+
         }
         #region 盒子事件监听
         private void MainWindow_SourceInitialized(object sender, EventArgs e)
@@ -263,192 +277,43 @@ namespace newCRM
         }
         #endregion 
 
+        /// <summary>
+        /// 盒子事件
+        /// </summary>
+        /// <param name="lParam"></param>
         private void HandleWindowProc(System.IntPtr lParam)
         {
             BriSDKLib.TBriEvent_Data EventData = (BriSDKLib.TBriEvent_Data)Marshal.PtrToStructure(lParam, typeof(BriSDKLib.TBriEvent_Data));
-
-            System.Diagnostics.Debug.WriteLine("event==>>" + EventData.lEventType);
+            Debug.WriteLine("event==>>" + EventData.lEventType);
 
             switch (EventData.lEventType)
             {
                 case BriSDKLib.BriEvent_PhoneHook://电话机摘机  
-                    if (VoipHelper.callState == VoipHelper.telState.IN)
-                    {
-                        VoipHelper.StopVoice(VoipHelper.playHandle);
-                        VoipHelper.OffOnHook(1);
-
-                        ConstDefault.resultToJs phoneHook = new ConstDefault.resultToJs();
-                        phoneHook.action = ConstDefault.phone_calling;
-                        phoneHook.isOffHook = true;
-                        tools.resultToJavascript(phoneHook);
-                    }
-                    if (VoipHelper.callState == VoipHelper.telState.OUT)
-                    {
-                        //VoipHelper.OffOnHook(1);
-                    }
+                    boxHandler.phoneHook();
                     break;
-                case BriSDKLib.BriEvent_PhoneHang://电话机挂机 
-                    if (VoipHelper.isOffHookCall)
-                    {
-                        VoipHelper.isOffHookCall = false;
-                        VoipHelper.offHookCallNumber = string.Empty;
-                    }
-                    VoipHelper.OffOnHook(0);
-
-                    ConstDefault.resultToJs phonehang = new ConstDefault.resultToJs();
-                    phonehang.action = ConstDefault.phone_idel;
-                    phonehang.isOffHook = true;
-                    tools.resultToJavascript(phonehang);
+                case BriSDKLib.BriEvent_PhoneHang://电话机挂机
+                    boxHandler.phoneHang();
                     break;
                 case BriSDKLib.BriEvent_GetCallID://接收到来电号码 
-                    if (ConstDefault.isCalling)
-                    {
-                        return;
-                    }
-                    ConstDefault.isCalling = true;
-                    ConstDefault.isMissed = true;
-                    VoipHelper.callState = VoipHelper.telState.IN;
-                    this.Activate();
-                    this.Topmost = true;
-                    VoipHelper.playHandle = VoipHelper.PlayVoice(VoipHelper.callBell);
-                    var phone = VoipHelper.FromASCIIByteArray(EventData.szData);
-                    //if (phone.Length < 7)
-                    //{
-                    //    VoipHelper.StopVoice(VoipHelper.playHandle);
-                    //    VoipHelper.OffOnHook(0);
-                    //    VoipHelper.lineToSpk(0);
-                    //    return;
-                    //}
-                    VoipHelper.callId = tools.GetCallId();
-
-                    ConstDefault.resultToJs getCallId = new ConstDefault.resultToJs();
-                    getCallId.action = ConstDefault.phone_ringing;
-                    getCallId.phoneNumber = phone;
-                    tools.resultToJavascript(getCallId);
-
-                    SetTimeOut(1000 * 30, new Action(() =>
-                    {
-                        this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal,
-                       (ThreadStart)delegate ()
-                       {
-                           if (ConstDefault.isMissed) // 如果是未接，30秒后 挂断。 因为 停止呼入时间有问题。 
-                           {
-                               this.Topmost = false;
-                               ConstDefault.isCalling = false; // 重置状态
-                               VoipHelper.StopVoice(VoipHelper.playHandle);
-                               VoipHelper.OffOnHook(0);
-                               VoipHelper.lineToSpk(0);
-
-                               ConstDefault.resultToJs getCallIdThree = new ConstDefault.resultToJs();
-                               getCallIdThree.action = ConstDefault.phone_idel;
-                               tools.resultToJavascript(getCallIdThree);
-                           }
-                       }
-                       );
-                    }));
+                    boxHandler.getCallID(VoipHelper.FromASCIIByteArray(EventData.szData));
                     break;
-                case BriSDKLib.BriEvent_StopCallIn://停止呼入，产生一个未接电话   
-                    //VoipHelper.StopVoice(VoipHelper.playHandle);
-                    //Debug.WriteLine("未接时间==>>" + BriSDKLib.QNV_CallLog(0, BriSDKLib.QNV_CALLLOG_ENDTIME, "", 0) * 1000);
-                    //long MissedCallTime = (long)BriSDKLib.QNV_CallLog(0, BriSDKLib.QNV_CALLLOG_ENDTIME, "", 0) * 1000;
-                    //ConstDefault.isBySelf = false;
-                    //tools.resultToJavascript(browser, ConstDefault.phone_idel, null, MissedCallTime, false);
-                    //this.Topmost = false;
-                    //VoipHelper.OffOnHook(0);
-                    //VoipHelper.lineToSpk(0);
-                    break;
-                case BriSDKLib.BriEvent_Busy://忙音 
-
-                    ConstDefault.resultToJs busy = new ConstDefault.resultToJs();
-                    busy.action = ConstDefault.phone_idel;
-                    tools.resultToJavascript(busy);
-
+                case BriSDKLib.BriEvent_Busy://忙音
+                    boxHandler.busy();
                     break;
                 case BriSDKLib.BriEvent_RemoteHook: //对方接听 
-
-                    ConstDefault.resultToJs remoteHook = new ConstDefault.resultToJs();
-                    remoteHook.action = ConstDefault.phone_calling;
-                    tools.resultToJavascript(remoteHook);
-
+                    boxHandler.remoteHook();
                     break;
-                case BriSDKLib.BriEvent_RemoteHang://远程挂机   
-                    //传给前端一个信号 
-                    ConstDefault.isBySelf = false; 
-
-                    ConstDefault.resultToJs remoteHang = new ConstDefault.resultToJs();
-                    remoteHang.action = ConstDefault.phone_idel;
-                    tools.resultToJavascript(remoteHang);
-
-                    VoipHelper.OffOnHook(0);
-                    VoipHelper.lineToSpk(0);
+                case BriSDKLib.BriEvent_RemoteHang://远程挂机 
+                    boxHandler.remoteHang();
                     break;
                 case BriSDKLib.BriEvent_PhoneDial://摘机手动拨号
-                    Debug.WriteLine("[摘机手动拨号==>>]" + VoipHelper.FromASCIIByteArray(EventData.szData));
-                    VoipHelper.offHookCallNumber = VoipHelper.FromASCIIByteArray(EventData.szData);
+                    boxHandler.phoneDial(VoipHelper.FromASCIIByteArray(EventData.szData));
                     break;
                 case BriSDKLib.BriEvent_RingBack://电话机检查拨号结束
-
-                    Debug.WriteLine("[摘机拨号状态]==>>" + EventData.lResult);
-                    if (EventData.lResult == 0 && VoipHelper.offHookCallNumber != null)
-                    {
-                        VoipHelper.OffOnHook(1);
-                        VoipHelper.callId = tools.GetCallId(); 
-
-                        ConstDefault.resultToJs ringBack = new ConstDefault.resultToJs();
-                        ringBack.action = ConstDefault.phone_dialing;
-                        ringBack.phoneNumber = VoipHelper.offHookCallNumber;
-                        tools.resultToJavascript(ringBack);
-
-                        VoipHelper.isOffHookCall = true;
-                        //传给前端手动摘机拨打的号码。
-                        Debug.WriteLine("电话机检查拨号结束" + VoipHelper.offHookCallNumber);
-                    }
+                    boxHandler.ringBack(EventData.lResult);
                     break;
                 case BriSDKLib.BriEvent_EnableHook: // 软摘/挂机 1是摘机  0是挂机
-                    try
-                    {
-                        if (EventData.lResult == 1)//摘机
-                        {
-                            Debug.WriteLine("[软摘机]");
-                            VoipHelper.StopVoice(VoipHelper.playHandle);
-                            if (VoipHelper.callState == VoipHelper.telState.IN)
-                            {
-                                ConstDefault.isMissed = false;
-                                Debug.WriteLine("[摘机时间]" + tools.GetTimeStamp()); 
-
-                                ConstDefault.resultToJs result = new ConstDefault.resultToJs();
-                                result.action = ConstDefault.phone_calling;
-                                tools.resultToJavascript(result);
-                            }
-                            else
-                            { 
-                                ConstDefault.resultToJs result = new ConstDefault.resultToJs();
-                                result.action = ConstDefault.phone_dialing;
-                                result.phoneNumber = VoipHelper.callNumber;
-                                tools.resultToJavascript(result);
-                            }
-                        }
-                        else //挂机
-                        {
-                            VoipHelper.StopVoice(VoipHelper.playHandle);
-                            Debug.WriteLine("[软挂机]");
-                            ConstDefault.isBySelf = true;
-                            ConstDefault.isCalling = false; 
-
-                            ConstDefault.resultToJs result = new ConstDefault.resultToJs();
-                            result.action = ConstDefault.phone_idel;
-                            tools.resultToJavascript(result);
-
-                            if (VoipHelper.callState == VoipHelper.telState.IN)
-                            {
-                                this.Topmost = false;
-                            }
-                        }
-                    }
-                    catch (Exception err)
-                    {
-                        Debug.WriteLine(err);
-                    }
+                    boxHandler.enableHook(EventData.lResult);
                     break;
                 default:
                     break;
@@ -473,6 +338,10 @@ namespace newCRM
         {
             isActivation = false;
         }
+        /// <summary>
+        /// CRM系统消息
+        /// </summary>
+        /// <param name="content"></param>
         public void newMessage(string content)
         {
             this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal,
@@ -495,12 +364,21 @@ namespace newCRM
                  );
               }));
         }
-
+        /// <summary>
+        /// CRM消息提示框关闭
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void close_Click(object sender, RoutedEventArgs e)
         {
             popup.IsOpen = false;
         }
 
+        /// <summary>
+        /// C# timeout
+        /// </summary>
+        /// <param name="interval"></param>
+        /// <param name="action"></param>
         void SetTimeOut(double interval, Action action)
         {
             System.Timers.Timer timer = new System.Timers.Timer(interval);
@@ -511,11 +389,27 @@ namespace newCRM
             };
             timer.Enabled = true;
         }
-
+        /// <summary>
+        /// CRM消息提示框
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void popup_MouseDown(object sender, MouseButtonEventArgs e)
         {
             popup.IsOpen = false;
             this.Activate();
+        }
+        /// <summary>
+        /// 浏览器按键事件 调用开发者工具
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Browser_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.LeftAlt) && Keyboard.IsKeyDown(Key.I))
+            {
+                browser.GetBrowser().ShowDevTools();
+            }
         }
     }
 }

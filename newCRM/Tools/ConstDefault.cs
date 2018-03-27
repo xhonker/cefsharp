@@ -10,11 +10,11 @@ using newCRM;
 using System.Configuration;
 namespace 上海CRM管理系统.Tools
 {
+    /// <summary>
+    /// 常量及对象
+    /// </summary>
     public class ConstDefault
     {
-        public const string upFileUrl = "http://crm-test.lanyife.com.cn";
-
-        //public const string upFileUrl = "http://crmb-fanx.dev.lanyicj.cn";
         #region 传给JS
         /// <summary>
         /// 正在拨号中
@@ -86,15 +86,36 @@ namespace 上海CRM管理系统.Tools
             public string msg = "成功";
             public string[] data;
         }
-
+        /// <summary>
+        /// 返回给JS的消息体
+        /// </summary>
         public class resultToJs
         {
+            /// <summary>
+            /// 行为
+            /// </summary>
             public string action;
+            /// <summary>
+            /// 电话号码
+            /// </summary>
             public string phoneNumber;
+            /// <summary>
+            /// 时间戳
+            /// </summary>
             public long time;
+            /// <summary>
+            /// 是否是本人挂机
+            /// </summary>
             public bool isOffHook;
+            /// <summary>
+            /// 设备是否正常
+            /// </summary>
             public bool deviceIsNormal;
         }
+
+        /// <summary>
+        /// 分块上传
+        /// </summary>
         public class chunkFile
         {
             /// <summary>
@@ -166,7 +187,6 @@ namespace 上海CRM管理系统.Tools
     /// </summary>
     public class JsonHelper
     {
-
         /// <summary>
         /// Json
         /// </summary>
@@ -223,49 +243,7 @@ namespace 上海CRM管理系统.Tools
         /// <summary>
         /// 返回给JS
         /// </summary>
-        /// <param name="browser">浏览器实例</param>
-        /// <param name="action">行为</param>
-        /// <param name="phoneNumber">电话号码</param>
-        /// <param name="time">时间</param>
-        /// <param name="isOffHook">是否是硬摘 硬挂</param>
-        //public static void resultToJavascript(ChromiumWebBrowser browser, string action, string phoneNumber, long time, bool isOffHook,bool deviceIsNormal)
-        //{
-        //    var msg = new DispacthMsg();
-        //    var paload = new Payload();
-        //    msg.action = action;
-        //    if (action == ConstDefault.phone_dialing || action == ConstDefault.phone_ringing)
-        //    {
-        //        paload.callId = VoipHelper.callId.ToString();
-        //    }
-        //    if (action == ConstDefault.phone_idel)
-        //    {
-        //        paload.isBySelf = ConstDefault.isBySelf;
-        //    }
-        //    msg.payload = paload;
-        //    paload.phoneNumber = phoneNumber;
-        //    if (time > 0)
-        //    {
-        //        paload.time = time;
-        //    }
-        //    else
-        //    {
-        //        paload.time = GetTimeStamp();
-        //    }
-        //    paload.isOffHook = isOffHook;
-        //    if (deviceIsNormal)
-        //    {
-        //        paload.deviceIsNormal = true;
-        //    }
-        //    else
-        //    {
-        //        paload.deviceIsNormal = false;
-        //    }
-        //    System.Diagnostics.Debug.WriteLine("[回传js]==>>" + JsonHelper.Jsons(msg));
-        //    browser.GetBrowser().MainFrame.EvaluateScriptAsync("lyJsBridge.dispacthMsg(" + JsonHelper.Jsons(msg) + ")");
-
-        //    //return "lyJsBridge.dispacthMsg(" + JsonHelper.Jsons(msg) + ")";
-        //}
-
+        /// <param name="result"></param>
         public static void resultToJavascript( ConstDefault.resultToJs result)
         {
             var msg = new DispacthMsg();
@@ -297,7 +275,13 @@ namespace 上海CRM管理系统.Tools
             System.Diagnostics.Debug.WriteLine("[回传js test]==>>" + JsonHelper.Jsons(msg));
             MainWindow.browser.GetBrowser().MainFrame.EvaluateScriptAsync("lyJsBridge.dispacthMsg(" + JsonHelper.Jsons(msg) + ")");
         }
-        public static void SetTimeOut(double interval, Action action)
+
+        /// <summary>
+        /// C# timeout
+        /// </summary>
+        /// <param name="interval"></param>
+        /// <param name="action"></param>
+       public static void SetTimeOut(double interval, Action action)
         {
             System.Timers.Timer timer = new System.Timers.Timer(interval);
             timer.Elapsed += delegate (object sender, System.Timers.ElapsedEventArgs e)

@@ -11,7 +11,7 @@ namespace 上海CRM管理系统.Tools
     {
         public void OnBeforeDownload(IBrowser browser, DownloadItem downloadItem, IBeforeDownloadCallback callback)
         {
-            System.Diagnostics.Debug.WriteLine(System.Security.Principal.WindowsIdentity.GetCurrent().Name);
+            //System.Diagnostics.Debug.WriteLine(System.Security.Principal.WindowsIdentity.GetCurrent().Name);
             if (!callback.IsDisposed)
             {
                 using (callback)

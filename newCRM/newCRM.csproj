@@ -19,7 +19,7 @@
     </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
     <IsWebBootstrapper>true</IsWebBootstrapper>
-    <PublishUrl>C:\Users\wu_xh\Desktop\test1\crm\</PublishUrl>
+    <PublishUrl>C:\Users\wu_xh\Desktop\test1\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
@@ -29,11 +29,11 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>true</UpdateRequired>
     <MapFileExtensions>false</MapFileExtensions>
-    <InstallUrl>http://crm.lanyikj.cn/</InstallUrl>
-    <MinimumRequiredVersion>1.0.0.87</MinimumRequiredVersion>
+    <InstallUrl>http://192.168.50.117/newcrm/</InstallUrl>
+    <MinimumRequiredVersion>1.0.0.90</MinimumRequiredVersion>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
-    <ApplicationRevision>88</ApplicationRevision>
+    <ApplicationRevision>91</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>true</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
@@ -151,6 +151,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Tools\boxHandler.cs" />
     <Compile Include="Tools\BriSDKLib.cs" />
     <Compile Include="Tools\browerDownLoad.cs" />
     <Compile Include="Tools\ConstDefault.cs" />
