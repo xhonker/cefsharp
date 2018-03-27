@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -189,7 +190,8 @@ namespace 上海CRM管理系统.Tools
                 {
                     // 文件大小
                     long totalSize = fStream.Length;
-                    totalChunk = Math.Round((double)totalSize / (double)byteCount) + 1;
+                 
+                    totalChunk =Math.Ceiling ((double)totalSize / (double)byteCount) + 1;
                     if (totalChunk == 1)
                     {
                         data = new byte[totalSize];
@@ -203,6 +205,10 @@ namespace 上海CRM管理系统.Tools
                         upFile.index = 1;
                         upFile.data = data;
                         var upDataFileResult = upDataFile(upFile);
+                        if (upDataFileResult == "")
+                        {
+                            return "";
+                        }
                         var result = JsonHelper.JsonDeserialize<ConstDefault.result>(upDataFileResult);
 
                         if (result.code == 200)
@@ -272,25 +278,33 @@ namespace 上海CRM管理系统.Tools
                             upFile.merge = merge;
 
                             var upDataFileResult = upDataFile(upFile);
-                            var result = JsonHelper.JsonDeserialize<ConstDefault.result>(upDataFileResult);
+                            if (!string.IsNullOrEmpty(upDataFileResult))
+                            {
+                                var result = JsonHelper.JsonDeserialize<ConstDefault.result>(upDataFileResult);
 
-                            if (result.code == 1)
-                            {
-                                return upDataFileResult;
-                            }
-                            else if (result.code == 400)
-                            {
-                                upDataFile(upFile);
-                                errCount++;
-                                if (errCount > 3)
+                                if (result.code == 1)
+                                {
+                                    return upDataFileResult;
+                                }
+                                else if (result.code == 400)
+                                {
+                                    upDataFile(upFile);
+                                    errCount++;
+                                    if (errCount > 3)
+                                    {
+                                        return "";
+                                    }
+                                }
+                                else if (result.code == 500)
                                 {
                                     return "";
                                 }
                             }
-                            else if (result.code == 500)
+                            else
                             {
                                 return "";
                             }
+                           
                         }
                     }
                 }
@@ -361,29 +375,42 @@ namespace 上海CRM管理系统.Tools
 
         public static string upDataFile(ConstDefault.chunkFile chunk)
         {
-            var client = new RestClient(ConstDefault.upFileUrl);
-            var requst = new RestRequest("call/post/chunk-upload", Method.POST);
-
-            requst.AddParameter("fileName", chunk.fileName);
-            requst.AddParameter("totalSize", chunk.totalSize);
-            requst.AddParameter("totalChunk", chunk.totalChunk);
-            requst.AddParameter("chunkSize", chunk.chunkSize);
-            requst.AddParameter("index", chunk.index);
-            requst.AddParameter("call_id", chunk.call_id);
-
-            if (chunk.data != null)
+            try
             {
-                requst.AddFile("data", chunk.data, chunk.fileName);
+                string serverAddress = ConfigurationManager.AppSettings["server"];
+                var client = new RestClient(serverAddress);
+                var requst = new RestRequest("call/post/chunk-upload", Method.POST);
+
+                requst.AddParameter("fileName", chunk.fileName);
+                requst.AddParameter("totalSize", chunk.totalSize);
+                requst.AddParameter("totalChunk", chunk.totalChunk);
+                requst.AddParameter("chunkSize", chunk.chunkSize);
+                requst.AddParameter("index", chunk.index);
+                requst.AddParameter("call_id", chunk.call_id);
+                System.Diagnostics.Debug.WriteLine(requst.Parameters);
+                if (chunk.data != null)
+                {
+                    requst.AddFile("data", chunk.data, chunk.fileName);
+                }
+
+                if (chunk.merge != 0)
+                {
+                    requst.AddParameter("merge", chunk.merge);
+                }
+                IRestResponse response = client.Execute(requst);
+                System.Diagnostics.Debug.WriteLine(response.Content);
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return "";
+                }
+
+                return response.Content;
+            }
+            catch (Exception)
+            {
+                return "";
             }
 
-            if (chunk.merge != 0)
-            {
-                requst.AddParameter("merge", chunk.merge);
-            }
-            IRestResponse response = client.Execute(requst);
-            System.Diagnostics.Debug.WriteLine(response.Content);
-
-            return response.Content;
         }
 
         public static string isSuccess(string data, ConstDefault.chunkFile upfile)

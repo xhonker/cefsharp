@@ -10,10 +10,9 @@
         Activated="Window_Activated"
         Deactivated="Window_Deactivated"
         WindowStartupLocation="CenterScreen"
-        WindowStyle="ToolWindow"
-        ResizeMode="NoResize"
         Icon="assets/icon.ico" 
-        
+        MinHeight="680"
+        MinWidth="1210"
         >
     <Window.Resources>
         <Style x:Key="btn_close" TargetType="Button"> 

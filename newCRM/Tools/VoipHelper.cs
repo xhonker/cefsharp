@@ -9,6 +9,13 @@ namespace newCRM.Tools
 {
     public class VoipHelper
     {
+        /// <summary>
+        /// 设备状态
+        /// </summary>
+        public static bool deviceState = true;
+        /// <summary>
+        /// 来电号码
+        /// </summary>
         public static string callNumber;
         /// <summary>
         /// 电话拨打类型
@@ -37,6 +44,10 @@ namespace newCRM.Tools
         /// 来电铃声
         /// </summary>
         public static string callBell = AppDomain.CurrentDomain.BaseDirectory + "//1670.wav";
+        /// <summary>
+        /// 播放风险提示
+        /// </summary>
+        public static string PLAYFILEPATH = AppDomain.CurrentDomain.BaseDirectory + "remind.wav";
         /// <summary>
         /// 录音句柄
         /// </summary>
@@ -84,8 +95,16 @@ namespace newCRM.Tools
         {
             lineToSpk(0);
             OffOnHook(0);
-            //EndRecord();
+            EndRecord();
             CloseDevice();
+        }
+        /// <summary>
+        /// 打开1/关闭0 麦克风到电话线
+        /// </summary>
+        /// <param name="domic">1打开/0关闭</param>
+        public static void domicToLine(int domic)
+        {
+            BriSDKLib.QNV_SetDevCtrl(VoipIndex, BriSDKLib.QNV_CTRL_DOMICTOLINE, domic);
         }
         /// <summary>
         /// 打开线路声音到耳机  1打开 0 关闭
@@ -99,11 +118,12 @@ namespace newCRM.Tools
         /// </summary>
         public static int OpenDevice()
         {
-            if (BriSDKLib.QNV_OpenDevice(BriSDKLib.ODT_LBRIDGE, 0, "") <= 0 || BriSDKLib.QNV_DevInfo(0, BriSDKLib.QNV_DEVINFO_GETCHANNELS) <= 0)
-            {
-                return -1;
-            }
-            return 1;
+            return BriSDKLib.QNV_OpenDevice(BriSDKLib.ODT_LBRIDGE, 0, "0");
+            //if (BriSDKLib.QNV_OpenDevice(BriSDKLib.ODT_LBRIDGE, 0, "") <= 0 || BriSDKLib.QNV_DevInfo(0, BriSDKLib.QNV_DEVINFO_GETCHANNELS) <= 0)
+            //{
+            //    return -1;
+            //}
+            //return 1;
         }
         /// <summary>
         /// 关闭设备

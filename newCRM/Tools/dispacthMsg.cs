@@ -52,5 +52,9 @@ namespace 上海CRM管理系统.Tools
         /// 是否评价中
         /// </summary>
         public bool isEvaluate;
+        /// <summary>
+        /// 设备是否正常
+        /// </summary>
+        public bool deviceIsNormal;
     }
 }

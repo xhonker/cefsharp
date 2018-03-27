@@ -6,6 +6,7 @@ using System.Runtime.Serialization.Json;
 using System.IO;
 using CefSharp.Wpf;
 using newCRM.Tools;
+using newCRM;
 using System.Configuration;
 namespace 上海CRM管理系统.Tools
 {
@@ -54,13 +55,28 @@ namespace 上海CRM管理系统.Tools
         /// 上一通是否评价
         /// </summary>
         public const string phone_is_evaluate = "PHONE_IS_EVALUATE";
+        /// <summary>
+        /// 风险提示
+        /// </summary>
+        public const string phone_riskprompt = "PHONE_RISKPROMPT";
+        /// <summary>
+        /// 设备是否正常
+        /// </summary>
+        public const string device_is_normal = "DEVICE_IS_NORMAL";
         #endregion
 
         /// <summary>
         /// 是否是自己挂断
         /// </summary>
         public static bool isBySelf = true;
-
+        /// <summary>
+        /// 是否是未接
+        /// </summary>
+        public static bool isMissed = true;
+        /// <summary>
+        /// 是否来电中
+        /// </summary>
+        public static bool isCalling = false;
         /// <summary>
         /// 服务器返回结构
         /// </summary>
@@ -69,6 +85,15 @@ namespace 上海CRM管理系统.Tools
             public int code = 200;
             public string msg = "成功";
             public string[] data;
+        }
+
+        public class resultToJs
+        {
+            public string action;
+            public string phoneNumber;
+            public long time;
+            public bool isOffHook;
+            public bool deviceIsNormal;
         }
         public class chunkFile
         {
@@ -203,34 +228,84 @@ namespace 上海CRM管理系统.Tools
         /// <param name="phoneNumber">电话号码</param>
         /// <param name="time">时间</param>
         /// <param name="isOffHook">是否是硬摘 硬挂</param>
-        public static void resultToJavascript(ChromiumWebBrowser browser, string action, string phoneNumber, long time, bool isOffHook)
+        //public static void resultToJavascript(ChromiumWebBrowser browser, string action, string phoneNumber, long time, bool isOffHook,bool deviceIsNormal)
+        //{
+        //    var msg = new DispacthMsg();
+        //    var paload = new Payload();
+        //    msg.action = action;
+        //    if (action == ConstDefault.phone_dialing || action == ConstDefault.phone_ringing)
+        //    {
+        //        paload.callId = VoipHelper.callId.ToString();
+        //    }
+        //    if (action == ConstDefault.phone_idel)
+        //    {
+        //        paload.isBySelf = ConstDefault.isBySelf;
+        //    }
+        //    msg.payload = paload;
+        //    paload.phoneNumber = phoneNumber;
+        //    if (time > 0)
+        //    {
+        //        paload.time = time;
+        //    }
+        //    else
+        //    {
+        //        paload.time = GetTimeStamp();
+        //    }
+        //    paload.isOffHook = isOffHook;
+        //    if (deviceIsNormal)
+        //    {
+        //        paload.deviceIsNormal = true;
+        //    }
+        //    else
+        //    {
+        //        paload.deviceIsNormal = false;
+        //    }
+        //    System.Diagnostics.Debug.WriteLine("[回传js]==>>" + JsonHelper.Jsons(msg));
+        //    browser.GetBrowser().MainFrame.EvaluateScriptAsync("lyJsBridge.dispacthMsg(" + JsonHelper.Jsons(msg) + ")");
+
+        //    //return "lyJsBridge.dispacthMsg(" + JsonHelper.Jsons(msg) + ")";
+        //}
+
+        public static void resultToJavascript( ConstDefault.resultToJs result)
         {
             var msg = new DispacthMsg();
-            var paload = new Payload();
-            msg.action = action;
-            if (action == ConstDefault.phone_dialing || action == ConstDefault.phone_ringing)
+            var payload = new Payload();
+            msg.action = result.action;
+            if (result.action == ConstDefault.phone_dialing || result.action == ConstDefault.phone_ringing)
             {
-                paload.callId = VoipHelper.callId.ToString();
+                payload.callId = VoipHelper.callId.ToString();
             }
-            if (action == ConstDefault.phone_idel)
+            else if (result.action == ConstDefault.phone_idel)
             {
-                paload.isBySelf = ConstDefault.isBySelf;
+                payload.isBySelf = ConstDefault.isBySelf;
             }
-            msg.payload = paload;
-            paload.phoneNumber = phoneNumber;
-            if (time > 0)
+            msg.payload = payload;
+
+            payload.phoneNumber = result.phoneNumber;
+        
+            payload.time = GetTimeStamp();
+            
+            payload.isOffHook = result.isOffHook;
+            if (result.deviceIsNormal)
             {
-                paload.time = time;
+                payload.deviceIsNormal = true;
             }
             else
             {
-                paload.time = GetTimeStamp();
+                payload.deviceIsNormal = false;
             }
-            paload.isOffHook = isOffHook;
-            System.Diagnostics.Debug.WriteLine("[回传js]==>>" + JsonHelper.Jsons(msg));
-            browser.GetBrowser().MainFrame.EvaluateScriptAsync("lyJsBridge.dispacthMsg(" + JsonHelper.Jsons(msg) + ")");
-
-            //return "lyJsBridge.dispacthMsg(" + JsonHelper.Jsons(msg) + ")";
+            System.Diagnostics.Debug.WriteLine("[回传js test]==>>" + JsonHelper.Jsons(msg));
+            MainWindow.browser.GetBrowser().MainFrame.EvaluateScriptAsync("lyJsBridge.dispacthMsg(" + JsonHelper.Jsons(msg) + ")");
+        }
+        public static void SetTimeOut(double interval, Action action)
+        {
+            System.Timers.Timer timer = new System.Timers.Timer(interval);
+            timer.Elapsed += delegate (object sender, System.Timers.ElapsedEventArgs e)
+            {
+                timer.Enabled = false;
+                action();
+            };
+            timer.Enabled = true;
         }
     }
 }

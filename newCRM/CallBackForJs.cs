@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Threading;
 using newCRM.Tools;
 using 上海CRM管理系统.Tools;
 namespace newCRM
@@ -33,7 +35,7 @@ namespace newCRM
             VoipHelper.lineToSpk(1);
             VoipHelper.OffOnHook(1);
         }
-   
+
         /// <summary>
         /// 挂断 
         /// code =200 成功 其他失败
@@ -59,6 +61,18 @@ namespace newCRM
             return "";
         }
         /// <summary>
+        /// 风险提示
+        /// </summary>
+        public void riskprompt()
+        {
+            if (VoipHelper.playHandle <= 0)
+            {
+                //VoipHelper.lineToSpk(0);
+                //VoipHelper.domicToLine(0);
+                VoipHelper.playHandle = VoipHelper.PlayVoice(VoipHelper.PLAYFILEPATH);
+            }
+        }
+        /// <summary>
         /// 系统消息
         /// </summary>
         /// <param name="message">传入消息对象</param>
@@ -67,7 +81,6 @@ namespace newCRM
         {
             if (!MainWindow.isActivation)
             {
-
                 MainWindow.form.newMessage(message);
             }
         }
@@ -86,6 +99,16 @@ namespace newCRM
             // var t =   VoipHelper.refuseCurrentIncoming();
             //    Debug.WriteLine("拒接来电" + t);
             //}
+        }
+        /// <summary>
+        /// 判断设备是否正常
+        /// </summary>
+        public void deviceIsNormal()
+        {
+            ConstDefault.resultToJs deviceIdNormal = new ConstDefault.resultToJs();
+            deviceIdNormal.action = ConstDefault.device_is_normal;
+            deviceIdNormal.deviceIsNormal = VoipHelper.deviceState;
+            tools.resultToJavascript(deviceIdNormal);
         }
         /// <summary>
         /// 统一消息接收
@@ -116,11 +139,16 @@ namespace newCRM
                             if (!string.IsNullOrEmpty(jsonMsg.payload.content))
                             {
                                 systemNewMessage(jsonMsg.payload.content);
-
                             }
                             break;
                         case ConstDefault.phone_is_evaluate:
                             phoneIsEvaluate(jsonMsg.payload.isEvaluate);
+                            break;
+                        case ConstDefault.phone_riskprompt:
+                            riskprompt();
+                            break;
+                        case ConstDefault.device_is_normal:
+                            deviceIsNormal();
                             break;
                         default:
                             break;
