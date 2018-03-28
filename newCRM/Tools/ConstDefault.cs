@@ -104,7 +104,7 @@ namespace 上海CRM管理系统.Tools
             /// </summary>
             public long time;
             /// <summary>
-            /// 是否是本人挂机
+            /// 是否硬摘
             /// </summary>
             public bool isOffHook;
             /// <summary>
@@ -272,7 +272,9 @@ namespace 上海CRM管理系统.Tools
             {
                 payload.deviceIsNormal = false;
             }
+            
             System.Diagnostics.Debug.WriteLine("[回传js test]==>>" + JsonHelper.Jsons(msg));
+            VoipHelper.WriteLog(string.Format("Client To Js ==>> {0}", JsonHelper.Jsons(msg)));
             MainWindow.browser.GetBrowser().MainFrame.EvaluateScriptAsync("lyJsBridge.dispacthMsg(" + JsonHelper.Jsons(msg) + ")");
         }
 

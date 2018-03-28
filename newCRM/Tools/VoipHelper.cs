@@ -119,11 +119,6 @@ namespace newCRM.Tools
         public static int OpenDevice()
         {
             return BriSDKLib.QNV_OpenDevice(BriSDKLib.ODT_LBRIDGE, 0, "0");
-            //if (BriSDKLib.QNV_OpenDevice(BriSDKLib.ODT_LBRIDGE, 0, "") <= 0 || BriSDKLib.QNV_DevInfo(0, BriSDKLib.QNV_DEVINFO_GETCHANNELS) <= 0)
-            //{
-            //    return -1;
-            //}
-            //return 1;
         }
         /// <summary>
         /// 关闭设备
@@ -154,29 +149,23 @@ namespace newCRM.Tools
             var constructedString = encoding.GetString(characters);
             var phoneNumber = constructedString.Substring(0, constructedString.IndexOf("\0"));
             return phoneNumber;
-
         }
         /// <summary>
         ///  软摘/挂机 1 摘机  0 挂机
         /// </summary>
         /// <param name="hook"></param>
         /// <returns></returns>
-        public static int OffOnHook(int hook)
+        public static void OffOnHook(int hook)
         {
             if (hook == 1)
             {
-                if (StartRecord() < 0)
-                {
-                    return -1;
-                }
+                StartRecord();
             }
             if (hook == 0)
             {
                 EndRecord();
             }
-            System.Diagnostics.Debug.WriteLine(BriSDKLib.QNV_SetDevCtrl((short)VoipIndex, BriSDKLib.QNV_CTRL_DOHOOK, hook));
-
-            return 200;
+            BriSDKLib.QNV_SetDevCtrl((short)VoipIndex, BriSDKLib.QNV_CTRL_DOHOOK, hook);
         }
         /// <summary>
         /// 播放语音文件  
@@ -222,7 +211,7 @@ namespace newCRM.Tools
             if (!string.IsNullOrEmpty(callId))
             {
                 var path = string.Format(recordPath + "\\{0}.wav", callId.ToString().Trim());
-                recordingHanle = BriSDKLib.QNV_RecordFile(VoipIndex, BriSDKLib.QNV_RECORD_FILE_START,BriSDKLib.BRI_WAV_FORMAT_PCM8K16B, BriSDKLib.RECORD_MASK_ECHO | BriSDKLib.RECORD_MASK_AGC, path);
+                recordingHanle = BriSDKLib.QNV_RecordFile(VoipIndex, BriSDKLib.QNV_RECORD_FILE_START, BriSDKLib.BRI_WAV_FORMAT_PCM8K16B, BriSDKLib.RECORD_MASK_ECHO | BriSDKLib.RECORD_MASK_AGC, path);
 
                 if (recordingHanle < 0)//录音失败
                 {
