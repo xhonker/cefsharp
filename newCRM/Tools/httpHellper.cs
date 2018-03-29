@@ -37,7 +37,9 @@ namespace 上海CRM管理系统.Tools
             var fileName = Path.GetFileName(filePath);
             // 总分片数
             double totalChunk;
-
+            FileInfo fi = new FileInfo(filePath);
+            var call_start = fi.CreationTime.ToString();
+            var call_end = fi.LastWriteTime.ToString();
             ConstDefault.chunkFile upFile;
             using (FileStream fStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
@@ -45,8 +47,8 @@ namespace 上海CRM管理系统.Tools
                 {
                     // 文件大小
                     long totalSize = fStream.Length;
-                 
-                    totalChunk =Math.Ceiling ((double)totalSize / (double)byteCount) + 1;
+
+                    totalChunk = Math.Ceiling((double)totalSize / (double)byteCount) + 1;
                     if (totalChunk == 1)
                     {
                         data = new byte[totalSize];
@@ -59,6 +61,8 @@ namespace 上海CRM管理系统.Tools
                         upFile.chunkSize = chunkSize;
                         upFile.index = 1;
                         upFile.data = data;
+                        upFile.call_start = call_start;
+                        upFile.call_end = call_end;
                         var upDataFileResult = upDataFile(upFile);
                         if (upDataFileResult == "")
                         {
@@ -72,6 +76,8 @@ namespace 上海CRM管理系统.Tools
                             upFile.call_id = callId;
                             upFile.fileName = fileName;
                             upFile.totalSize = totalSize;
+                            upFile.call_start = call_start;
+                            upFile.call_end = call_end;
                             upFile.totalChunk = 1;
                             upFile.chunkSize = 0;
                             upFile.index = 2;
@@ -131,6 +137,8 @@ namespace 上海CRM管理系统.Tools
                             upFile.index = cruuent;
                             upFile.data = data;
                             upFile.merge = merge;
+                            upFile.call_start = call_start;
+                            upFile.call_end = call_end;
 
                             var upDataFileResult = upDataFile(upFile);
                             if (!string.IsNullOrEmpty(upDataFileResult))
@@ -159,7 +167,7 @@ namespace 上海CRM管理系统.Tools
                             {
                                 return "";
                             }
-                           
+
                         }
                     }
                 }
@@ -246,7 +254,9 @@ namespace 上海CRM管理系统.Tools
                 requst.AddParameter("chunkSize", chunk.chunkSize);
                 requst.AddParameter("index", chunk.index);
                 requst.AddParameter("call_id", chunk.call_id);
-                System.Diagnostics.Debug.WriteLine(requst.Parameters);
+                requst.AddParameter("call_start",chunk.call_start);
+                requst.AddParameter("call_end",chunk.call_end);
+
                 if (chunk.data != null)
                 {
                     requst.AddFile("data", chunk.data, chunk.fileName);

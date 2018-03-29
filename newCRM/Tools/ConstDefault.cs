@@ -150,6 +150,14 @@ namespace 上海CRM管理系统.Tools
             /// 是否合并
             /// </summary>
             public int merge;
+            /// <summary>
+            /// 通话开始时间
+            /// </summary>
+            public string call_start;
+            /// <summary>
+            /// 通话结束时间
+            /// </summary>
+            public string call_end;
         }
         /// <summary>
         /// 消息通知

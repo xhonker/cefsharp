@@ -14,7 +14,7 @@ namespace newCRM.Tools
         /// </summary>
         public static bool deviceState = true;
         /// <summary>
-        /// 来电号码
+        /// 拨打号码
         /// </summary>
         public static string callNumber;
         /// <summary>
@@ -215,6 +215,7 @@ namespace newCRM.Tools
 
                 if (recordingHanle < 0)//录音失败
                 {
+                    WriteLog("录音失败");
                     BriSDKLib.QNV_RecordFile(VoipIndex, BriSDKLib.QNV_RECORD_FILE_STOPALL, 0, 0, "0");
                     lineToSpk(0);
                     OffOnHook(0);
