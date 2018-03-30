@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using newCRM.Tools;
 using newCRM;
@@ -89,11 +86,6 @@ namespace 上海CRM管理系统.Tools
                         ConstDefault.isCalling = false; // 重置状态
                         VoipHelper.StopVoice(VoipHelper.playHandle);
                         VoipHelper.OffOnHook(0);
-                        VoipHelper.lineToSpk(0);
-
-                        ConstDefault.resultToJs getCallIdThree = new ConstDefault.resultToJs();
-                        getCallIdThree.action = ConstDefault.phone_idel;
-                        tools.resultToJavascript(getCallIdThree);
                     }
                 }
                 );
@@ -107,7 +99,7 @@ namespace 上海CRM管理系统.Tools
         {
             VoipHelper.WriteLog(string.Format("忙音"));
             ConstDefault.resultToJs busy = new ConstDefault.resultToJs();
-            busy.action = ConstDefault.phone_idel;
+            busy.action = ConstDefault.line_is_BusyOrHangup;
             tools.resultToJavascript(busy);
         }
 
@@ -127,15 +119,12 @@ namespace 上海CRM管理系统.Tools
         /// </summary>
         public static void remoteHang()
         {
-            VoipHelper.playHandle = VoipHelper.StopVoice(VoipHelper.playHandle);
             VoipHelper.WriteLog(string.Format("远程挂机"));
+            VoipHelper.playHandle = VoipHelper.StopVoice(VoipHelper.playHandle);
             ConstDefault.isBySelf = false;
-
-            ConstDefault.resultToJs remoteHang = new ConstDefault.resultToJs();
-            remoteHang.action = ConstDefault.phone_idel;
+            ConstDefault.resultToJs remoteHang = new Tools.ConstDefault.resultToJs();
+            remoteHang.action = ConstDefault.line_is_BusyOrHangup;
             tools.resultToJavascript(remoteHang);
-            VoipHelper.OffOnHook(0);
-            VoipHelper.lineToSpk(0);
         }
 
         /// <summary>
@@ -179,6 +168,7 @@ namespace 上海CRM管理系统.Tools
                 {
                     VoipHelper.WriteLog(string.Format("软摘机"));
                     VoipHelper.StopVoice(VoipHelper.playHandle);
+                    VoipHelper.lineToSpk(1);
                     if (VoipHelper.callState == VoipHelper.telState.IN)
                     {
                         ConstDefault.isMissed = false;
@@ -198,6 +188,7 @@ namespace 上海CRM管理系统.Tools
                 else //挂机
                 {
                     VoipHelper.WriteLog(string.Format("软挂机"));
+                    VoipHelper.lineToSpk(0);
                     VoipHelper.offHookCallNumber = null;
                     VoipHelper.StopVoice(VoipHelper.playHandle);
                     ConstDefault.isBySelf = true;
@@ -215,7 +206,7 @@ namespace 上海CRM管理系统.Tools
             }
             catch (Exception err)
             {
-                VoipHelper.WriteLog(string.Format("软摘软挂错误==>>{1}", err));
+                VoipHelper.WriteLog(string.Format("软摘软挂错误==>>{0}", err));
             }
         }
     }

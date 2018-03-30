@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Runtime.Serialization.Json;
 using System.IO;
-using CefSharp.Wpf;
 using newCRM.Tools;
 using newCRM;
-using System.Configuration;
+using Newtonsoft.Json;
+
 namespace 上海CRM管理系统.Tools
 {
     /// <summary>
@@ -32,6 +30,10 @@ namespace 上海CRM管理系统.Tools
         /// 挂断
         /// </summary>
         public const string phone_idel = "PHONE_IDEL";
+        /// <summary>
+        /// 判断线路忙音或者远程挂机信号
+        /// </summary>
+        public const string line_is_BusyOrHangup = "LINE_IS_BUSYORHANGUP";
         #endregion
 
         #region js传过来的
@@ -190,41 +192,7 @@ namespace 上海CRM管理系统.Tools
             public string from_user;
         }
     }
-    /// <summary>
-    /// 序列化
-    /// </summary>
-    public class JsonHelper
-    {
-        /// <summary>
-        /// Json
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        public static string Jsons<T>(T t)
-        {
-            DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
-            MemoryStream ms = new MemoryStream();
-            ser.WriteObject(ms, t);
-            string jsonString = Encoding.UTF8.GetString(ms.ToArray());
-            ms.Close();
-            return jsonString;
-        }
-        /// <summary>
-        /// 反Json
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="jsonString"></param>
-        /// <returns></returns>
-        public static T JsonDeserialize<T>(string jsonString)
-        {
-            DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
-            MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(jsonString));
 
-            T obj = (T)ser.ReadObject(ms);
-            return obj;
-        }
-    }
     /// <summary>
     /// 常用工具库
     /// </summary>
@@ -252,7 +220,7 @@ namespace 上海CRM管理系统.Tools
         /// 返回给JS
         /// </summary>
         /// <param name="result"></param>
-        public static void resultToJavascript( ConstDefault.resultToJs result)
+        public static void resultToJavascript(ConstDefault.resultToJs result)
         {
             var msg = new DispacthMsg();
             var payload = new Payload();
@@ -268,9 +236,9 @@ namespace 上海CRM管理系统.Tools
             msg.payload = payload;
 
             payload.phoneNumber = result.phoneNumber;
-        
+
             payload.time = GetTimeStamp();
-            
+
             payload.isOffHook = result.isOffHook;
             if (result.deviceIsNormal)
             {
@@ -280,10 +248,10 @@ namespace 上海CRM管理系统.Tools
             {
                 payload.deviceIsNormal = false;
             }
-            
-            System.Diagnostics.Debug.WriteLine("[回传js test]==>>" + JsonHelper.Jsons(msg));
-            VoipHelper.WriteLog(string.Format("Client To Js ==>> {0}", JsonHelper.Jsons(msg)));
-            MainWindow.browser.GetBrowser().MainFrame.EvaluateScriptAsync("lyJsBridge.dispacthMsg(" + JsonHelper.Jsons(msg) + ")");
+            string resultToJs = JsonConvert.SerializeObject(msg);
+            System.Diagnostics.Debug.WriteLine("[回传js test]==>>" + resultToJs);
+            VoipHelper.WriteLog(string.Format("Client To Js ==>> {0}", resultToJs));
+            MainWindow.browser.GetBrowser().MainFrame.EvaluateScriptAsync(string.Format("lyJsBridge.dispacthMsg({0})", resultToJs));
         }
 
         /// <summary>
@@ -291,7 +259,7 @@ namespace 上海CRM管理系统.Tools
         /// </summary>
         /// <param name="interval"></param>
         /// <param name="action"></param>
-       public static void SetTimeOut(double interval, Action action)
+        public static void SetTimeOut(double interval, Action action)
         {
             System.Timers.Timer timer = new System.Timers.Timer(interval);
             timer.Elapsed += delegate (object sender, System.Timers.ElapsedEventArgs e)

@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using newCRM.Tools;
 using RestSharp;
+using Newtonsoft.Json;
+
 namespace 上海CRM管理系统.Tools
 {
     /// <summary>
@@ -68,8 +65,7 @@ namespace 上海CRM管理系统.Tools
                         {
                             return "";
                         }
-                        var result = JsonHelper.JsonDeserialize<ConstDefault.result>(upDataFileResult);
-
+                        var result = JsonConvert.DeserializeObject<ConstDefault.result>(upDataFileResult);
                         if (result.code == 200)
                         {
                             upFile = new ConstDefault.chunkFile();
@@ -83,8 +79,8 @@ namespace 上海CRM管理系统.Tools
                             upFile.index = 2;
                             upFile.merge = 1;
                             var upDataFileResult1 = upDataFile(upFile);
-                            var result1 = JsonHelper.JsonDeserialize<ConstDefault.result>(upDataFileResult1);
-                            if (result1.code == 1)
+                            var resultMerge = JsonConvert.DeserializeObject<ConstDefault.result>(upDataFileResult1);
+                            if (resultMerge.code == 1)
                             {
                                 return upDataFileResult1;
                             }
@@ -143,7 +139,7 @@ namespace 上海CRM管理系统.Tools
                             var upDataFileResult = upDataFile(upFile);
                             if (!string.IsNullOrEmpty(upDataFileResult))
                             {
-                                var result = JsonHelper.JsonDeserialize<ConstDefault.result>(upDataFileResult);
+                                var result = JsonConvert.DeserializeObject<ConstDefault.result>(upDataFileResult);
 
                                 if (result.code == 1)
                                 {
@@ -254,8 +250,8 @@ namespace 上海CRM管理系统.Tools
                 requst.AddParameter("chunkSize", chunk.chunkSize);
                 requst.AddParameter("index", chunk.index);
                 requst.AddParameter("call_id", chunk.call_id);
-                requst.AddParameter("call_start",chunk.call_start);
-                requst.AddParameter("call_end",chunk.call_end);
+                requst.AddParameter("call_start", chunk.call_start);
+                requst.AddParameter("call_end", chunk.call_end);
 
                 if (chunk.data != null)
                 {

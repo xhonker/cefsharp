@@ -1,8 +1,8 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading;
+﻿using System.Diagnostics;
 using newCRM.Tools;
 using 上海CRM管理系统.Tools;
+using Newtonsoft.Json;
+
 namespace newCRM
 {
     internal class CallBackForJs
@@ -21,7 +21,6 @@ namespace newCRM
             VoipHelper.callNumber = phone;
             VoipHelper.Call(phone);
             VoipHelper.OffOnHook(1);
-            VoipHelper.lineToSpk(1);
         }
         /// <summary>
         /// 接听来电
@@ -31,7 +30,6 @@ namespace newCRM
         /// <returns>{code:number,msg:string}</returns>
         public void answerCall()
         {
-            VoipHelper.lineToSpk(1);
             VoipHelper.OffOnHook(1);
         }
 
@@ -43,7 +41,6 @@ namespace newCRM
         public void stopTalk()
         {
             VoipHelper.OffOnHook(0);
-            VoipHelper.lineToSpk(0);
         }
         /// <summary>
         /// 风险提示
@@ -102,8 +99,10 @@ namespace newCRM
 
             if (!string.IsNullOrEmpty(msg))
             {
-                var jsonMsg = JsonHelper.JsonDeserialize<DispacthMsg>(msg);
-                VoipHelper.WriteLog(string.Format("Js To Client ==>> {0}",msg));
+                //var jsonMsg = JsonHelper.JsonDeserialize<DispacthMsg>(msg);
+                var jsonMsg = JsonConvert.DeserializeObject<DispacthMsg>(msg);
+                Debug.WriteLine(JsonConvert.DeserializeObject<DispacthMsg>(msg));
+                VoipHelper.WriteLog(string.Format("Js To Client ==>> {0}", msg));
                 if (jsonMsg.action != null)
                 {
                     switch (jsonMsg.action)

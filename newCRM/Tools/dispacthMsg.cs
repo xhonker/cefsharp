@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace 上海CRM管理系统.Tools
+﻿namespace 上海CRM管理系统.Tools
 {
     /// <summary>
     /// 返回给前端的json
