@@ -23,6 +23,10 @@ namespace newCRM.Tools
             OUT, IN
         }
         /// <summary>
+        /// 日志写入锁
+        /// </summary>
+        public static System.Threading.ReaderWriterLockSlim logWriteLock = new System.Threading.ReaderWriterLockSlim();
+        /// <summary>
         /// 电话拨打状态
         /// </summary>
         public static telState callState;
@@ -268,6 +272,7 @@ namespace newCRM.Tools
         {
             return BriSDKLib.QNV_General(0, BriSDKLib.QNV_GENERAL_STOPREFUSE, 0, "");
         }
+
         /// <summary>
         /// 写入日志
         /// </summary>
@@ -281,23 +286,52 @@ namespace newCRM.Tools
             createDirectory(FilePath);
             if (File.Exists(FileName))
             {
-                using (fs = new FileStream(FileName, FileMode.Append, FileAccess.Write))
+                try
                 {
-                    using (sw = new StreamWriter(fs))
+                    using (fs = new FileStream(FileName, FileMode.Append, FileAccess.Write))
                     {
-                        sw.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " ---- " + strLog);
-                    }
-                };
+                        using (sw = new StreamWriter(fs))
+                        {
+                            logWriteLock.EnterWriteLock();
+                            sw.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " ---- " + strLog);
+                            sw.Close();
+                            sw.Dispose();
+                        }
+                    };
+                }
+                catch (Exception err)
+                {
+
+                }
+                finally
+                {
+                    logWriteLock.ExitWriteLock();
+                }
+
             }
             else
             {
-                using (fs = new FileStream(FileName, FileMode.Create, FileAccess.Write))
+                try
                 {
-                    using (sw = new StreamWriter(fs))
+                    using (fs = new FileStream(FileName, FileMode.Create, FileAccess.Write))
                     {
-                        sw.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " ---- " + strLog);
-                    }
-                };
+                        using (sw = new StreamWriter(fs))
+                        {
+                            logWriteLock.EnterWriteLock();
+                            sw.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " ---- " + strLog);
+                            sw.Close();
+                            sw.Dispose();
+                        }
+                    };
+                }
+                catch (Exception err)
+                {
+
+                }
+                finally
+                {
+                    logWriteLock.ExitWriteLock();
+                }
             }
         }
     }

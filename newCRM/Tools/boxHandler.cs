@@ -163,6 +163,7 @@ namespace 上海CRM管理系统.Tools
         {
             try
             {
+                
                 if (result == 1)//摘机
                 {
                     VoipHelper.WriteLog(string.Format("软摘机"));
@@ -205,6 +206,11 @@ namespace 上海CRM管理系统.Tools
             }
             catch (Exception err)
             {
+                ConstDefault.resultToJs errToJs = new ConstDefault.resultToJs();
+                errToJs.action = ConstDefault.phone_idel;
+                tools.resultToJavascript(errToJs);
+                VoipHelper.CloseDevice();
+                VoipHelper.OpenDevice();
                 VoipHelper.WriteLog(string.Format("软摘软挂错误==>>{0}", err));
                 return;
             }
