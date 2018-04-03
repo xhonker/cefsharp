@@ -84,9 +84,8 @@ namespace 上海CRM管理系统.Tools
         /// </summary>
         public class result
         {
-            public int code = 200;
-            public string msg = "成功";
-            public string[] data;
+            public int code ;
+            public string msg;
         }
         /// <summary>
         /// 返回给JS的消息体

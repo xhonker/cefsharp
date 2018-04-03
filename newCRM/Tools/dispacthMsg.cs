@@ -51,5 +51,9 @@
         /// 设备是否正常
         /// </summary>
         public bool deviceIsNormal;
+        /// <summary>
+        /// 登录用户
+        /// </summary>
+        public string userID;
     }
 }
