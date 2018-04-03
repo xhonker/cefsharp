@@ -1,8 +1,8 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading;
+﻿using System.Diagnostics;
 using newCRM.Tools;
 using 上海CRM管理系统.Tools;
+using Newtonsoft.Json;
+
 namespace newCRM
 {
     internal class CallBackForJs
@@ -21,7 +21,6 @@ namespace newCRM
             VoipHelper.callNumber = phone;
             VoipHelper.Call(phone);
             VoipHelper.OffOnHook(1);
-            VoipHelper.lineToSpk(1);
         }
         /// <summary>
         /// 接听来电
@@ -31,7 +30,6 @@ namespace newCRM
         /// <returns>{code:number,msg:string}</returns>
         public void answerCall()
         {
-            VoipHelper.lineToSpk(1);
             VoipHelper.OffOnHook(1);
         }
 
@@ -43,7 +41,6 @@ namespace newCRM
         public void stopTalk()
         {
             VoipHelper.OffOnHook(0);
-            VoipHelper.lineToSpk(0);
         }
         /// <summary>
         /// 风险提示
@@ -52,6 +49,7 @@ namespace newCRM
         {
             if (VoipHelper.playHandle <= 0)
             {
+                VoipHelper.domicToLine(0);
                 VoipHelper.playHandle = VoipHelper.PlayVoice(VoipHelper.PLAYFILEPATH);
             }
         }
@@ -86,8 +84,9 @@ namespace newCRM
         /// <summary>
         /// 判断设备是否正常
         /// </summary>
-        public void deviceIsNormal()
+        public void deviceIsNormal(string userID)
         {
+            VoipHelper.userID = userID;
             ConstDefault.resultToJs deviceIdNormal = new ConstDefault.resultToJs();
             deviceIdNormal.action = ConstDefault.device_is_normal;
             deviceIdNormal.deviceIsNormal = VoipHelper.deviceState;
@@ -102,8 +101,10 @@ namespace newCRM
 
             if (!string.IsNullOrEmpty(msg))
             {
-                var jsonMsg = JsonHelper.JsonDeserialize<DispacthMsg>(msg);
-                VoipHelper.WriteLog(string.Format("Js To Client ==>> {0}",msg));
+                //var jsonMsg = JsonHelper.JsonDeserialize<DispacthMsg>(msg);
+                var jsonMsg = JsonConvert.DeserializeObject<DispacthMsg>(msg);
+                Debug.WriteLine(JsonConvert.DeserializeObject<DispacthMsg>(msg));
+                VoipHelper.WriteLog(string.Format("Js To Client ==>> {0}", msg));
                 if (jsonMsg.action != null)
                 {
                     switch (jsonMsg.action)
@@ -130,7 +131,7 @@ namespace newCRM
                             riskprompt();
                             break;
                         case ConstDefault.device_is_normal:
-                            deviceIsNormal();
+                            deviceIsNormal(jsonMsg.payload.userID);
                             break;
                         default:
                             break;

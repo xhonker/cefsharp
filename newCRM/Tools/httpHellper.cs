@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using newCRM.Tools;
 using RestSharp;
+using Newtonsoft.Json;
+using newCRM.Tools;
+
 namespace 上海CRM管理系统.Tools
 {
     /// <summary>
@@ -66,10 +64,10 @@ namespace 上海CRM管理系统.Tools
                         var upDataFileResult = upDataFile(upFile);
                         if (upDataFileResult == "")
                         {
+                            VoipHelper.WriteLog(string.Format("上传失败==>> {0}", upDataFileResult));
                             return "";
                         }
-                        var result = JsonHelper.JsonDeserialize<ConstDefault.result>(upDataFileResult);
-
+                        var result = JsonConvert.DeserializeObject<ConstDefault.result>(upDataFileResult);
                         if (result.code == 200)
                         {
                             upFile = new ConstDefault.chunkFile();
@@ -83,14 +81,15 @@ namespace 上海CRM管理系统.Tools
                             upFile.index = 2;
                             upFile.merge = 1;
                             var upDataFileResult1 = upDataFile(upFile);
-                            var result1 = JsonHelper.JsonDeserialize<ConstDefault.result>(upDataFileResult1);
-                            if (result1.code == 1)
+                            var resultMerge = JsonConvert.DeserializeObject<ConstDefault.result>(upDataFileResult1);
+                            if (resultMerge.code == 1)
                             {
                                 return upDataFileResult1;
                             }
                         }
                         else if (result.code == 400)
                         {
+                            VoipHelper.WriteLog(string.Format("上传失败==>> {0}", upDataFileResult));
                             upDataFile(upFile);
                             errCount++;
                             if (errCount > 3)
@@ -100,6 +99,7 @@ namespace 上海CRM管理系统.Tools
                         }
                         else if (result.code == 500)
                         {
+                            VoipHelper.WriteLog(string.Format("上传失败==>> {0}", upDataFileResult));
                             return "";
                         }
                     }
@@ -143,7 +143,7 @@ namespace 上海CRM管理系统.Tools
                             var upDataFileResult = upDataFile(upFile);
                             if (!string.IsNullOrEmpty(upDataFileResult))
                             {
-                                var result = JsonHelper.JsonDeserialize<ConstDefault.result>(upDataFileResult);
+                                var result = JsonConvert.DeserializeObject<ConstDefault.result>(upDataFileResult);
 
                                 if (result.code == 1)
                                 {
@@ -151,6 +151,7 @@ namespace 上海CRM管理系统.Tools
                                 }
                                 else if (result.code == 400)
                                 {
+                                    VoipHelper.WriteLog(string.Format("上传失败==>> {0}", upDataFileResult));
                                     upDataFile(upFile);
                                     errCount++;
                                     if (errCount > 3)
@@ -160,11 +161,13 @@ namespace 上海CRM管理系统.Tools
                                 }
                                 else if (result.code == 500)
                                 {
+                                    VoipHelper.WriteLog(string.Format("上传失败==>> {0}", upDataFileResult));
                                     return "";
                                 }
                             }
                             else
                             {
+                                VoipHelper.WriteLog(string.Format("上传失败==>> {0}", upDataFileResult));
                                 return "";
                             }
 
@@ -254,8 +257,8 @@ namespace 上海CRM管理系统.Tools
                 requst.AddParameter("chunkSize", chunk.chunkSize);
                 requst.AddParameter("index", chunk.index);
                 requst.AddParameter("call_id", chunk.call_id);
-                requst.AddParameter("call_start",chunk.call_start);
-                requst.AddParameter("call_end",chunk.call_end);
+                requst.AddParameter("call_start", chunk.call_start);
+                requst.AddParameter("call_end", chunk.call_end);
 
                 if (chunk.data != null)
                 {
@@ -270,16 +273,52 @@ namespace 上海CRM管理系统.Tools
                 System.Diagnostics.Debug.WriteLine(response.Content);
                 if (response.StatusCode == HttpStatusCode.NotFound)
                 {
+                    VoipHelper.WriteLog(string.Format("上传出错 ==>> {0}", response.Content.ToString()));
                     return "";
                 }
 
                 return response.Content;
             }
-            catch (Exception)
+            catch (Exception err)
             {
+                VoipHelper.WriteLog(string.Format("上传出错 ==>> {0}", err));
                 return "";
             }
 
+        }
+        /// <summary>
+        /// 上传日志
+        /// </summary>
+        /// <param name="username">员工工号</param>
+        /// <param name="file">文件路径</param>
+        /// <returns></returns>
+        public static string uploadLog(string username, string file)
+        {
+            try
+            {
+                string serverAddress = ConfigurationManager.AppSettings["server"];
+                var client = new RestClient(serverAddress);
+                var requst = new RestRequest("/call/post/save-file", Method.POST);
+                requst.AddParameter("username", username);
+                requst.AddFile("LyCall[file]", file);
+
+                IRestResponse response = client.Execute(requst);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    VoipHelper.WriteLog(string.Format("日志上传成功"));
+                    return response.Content;
+                }
+                else
+                {
+                    VoipHelper.WriteLog(string.Format("日志上传失败 ==>> {0} username ==>> {1} filePath ==>> {2}", response.Content, username, file));
+                    return "";
+                }
+            }
+            catch (Exception err)
+            {
+                VoipHelper.WriteLog(string.Format("日志上传失败==>> {0}", err));
+                return err.ToString();
+            }
         }
     }
 

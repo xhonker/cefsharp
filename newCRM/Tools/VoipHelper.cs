@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using newCRM.Tools;
 using System.IO;
+using 上海CRM管理系统.Tools;
+
 namespace newCRM.Tools
 {
     public class VoipHelper
@@ -65,6 +63,18 @@ namespace newCRM.Tools
         /// </summary>
         public static short VoipIndex = 0;
         /// <summary>
+        /// crm日志和录音存放目录
+        /// </summary>
+        public static string crmRoot;
+        /// <summary>
+        /// 所有交互日志
+        /// </summary>
+        public static string crmLog;
+        /// <summary>
+        /// 登录用户账号
+        /// </summary>
+        public static string userID;
+        /// <summary>
         /// 初始化盒子 设置相关配置
         /// </summary>
         public static void init()
@@ -82,10 +92,24 @@ namespace newCRM.Tools
             BriSDKLib.QNV_SetParam(VoipIndex, BriSDKLib.QNV_PARAM_AM_LINEIN, 7);//电话线路信号强
 
             BriSDKLib.QNV_SetParam(VoipIndex, BriSDKLib.QNV_PARAM_AM_DOPLAY, 15);
-            recordPath = AppDomain.CurrentDomain.BaseDirectory + "record";
-            if (Directory.Exists(recordPath))
+
+            crmRoot = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\crm"; // 目录在 用户目录\\AppData\\Roaming 
+            crmLog = crmRoot + "\\log";
+            recordPath = crmRoot + "\\record";
+            createDirectory(crmRoot);
+            createDirectory(crmLog);
+            createDirectory(recordPath);
+        }
+        /// <summary>
+        /// 创建目录
+        /// </summary>
+        /// <param name="path">路径</param>
+        public static void createDirectory(string path)
+        {
+            if (!Directory.Exists(path))
             {
-                Directory.CreateDirectory(recordPath);
+                Directory.CreateDirectory(path);
+                File.SetAttributes(path, FileAttributes.Hidden);
             }
         }
         /// <summary>
@@ -97,6 +121,10 @@ namespace newCRM.Tools
             OffOnHook(0);
             EndRecord();
             CloseDevice();
+
+            string FilePath = string.Format("{0}/{1}/{2}", crmLog, DateTime.Now.Year, DateTime.Now.Month);
+            string FileName = string.Format("{0}/{1}", FilePath, DateTime.Now.ToString("dd") + ".log");
+            httpHellper.uploadLog(userID, FileName);
         }
         /// <summary>
         /// 打开1/关闭0 麦克风到电话线
@@ -217,7 +245,6 @@ namespace newCRM.Tools
                 {
                     WriteLog("录音失败");
                     BriSDKLib.QNV_RecordFile(VoipIndex, BriSDKLib.QNV_RECORD_FILE_STOPALL, 0, 0, "0");
-                    lineToSpk(0);
                     OffOnHook(0);
                     return -1;
                 }
@@ -249,25 +276,29 @@ namespace newCRM.Tools
         {
             FileStream fs;
             StreamWriter sw;
-            string FilePath = AppDomain.CurrentDomain.BaseDirectory + "log\\" + DateTime.Now.Year + "\\" + DateTime.Now.Month;
-            string FileName = DateTime.Now.ToString("dd") + ".log";
-            FileName = FilePath + "\\" + FileName;
-            if (!System.IO.Directory.Exists(FilePath))
-            {
-                System.IO.Directory.CreateDirectory(FilePath);
-            }
+            string FilePath = string.Format("{0}/{1}/{2}", crmLog, DateTime.Now.Year, DateTime.Now.Month);
+            string FileName = string.Format("{0}/{1}", FilePath, DateTime.Now.ToString("dd") + ".log");
+            createDirectory(FilePath);
             if (File.Exists(FileName))
             {
-                fs = new FileStream(FileName, FileMode.Append, FileAccess.Write);
+                using (fs = new FileStream(FileName, FileMode.Append, FileAccess.Write))
+                {
+                    using (sw = new StreamWriter(fs))
+                    {
+                        sw.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " ---- " + strLog);
+                    }
+                };
             }
             else
             {
-                fs = new FileStream(FileName, FileMode.Create, FileAccess.Write);
+                using (fs = new FileStream(FileName, FileMode.Create, FileAccess.Write))
+                {
+                    using (sw = new StreamWriter(fs))
+                    {
+                        sw.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " ---- " + strLog);
+                    }
+                };
             }
-            sw = new StreamWriter(fs);
-            sw.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " ---- " + strLog);
-            sw.Close();
-            fs.Close();
         }
     }
 }

@@ -1,18 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using CefSharp.Wpf;
 using newCRM.Tools;
 using System.IO;
@@ -22,6 +13,7 @@ using System.Threading;
 using System.ComponentModel;
 using CefSharp;
 using System.Configuration;
+using Newtonsoft.Json;
 
 namespace newCRM
 {
@@ -63,7 +55,6 @@ namespace newCRM
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             string serverAddress = ConfigurationManager.AppSettings["server"];
-
             #region browser
             #region 初始化环境 禁用gpu 防止闪烁
             var setting = new CefSharp.CefSettings();
@@ -115,7 +106,8 @@ namespace newCRM
             uploadRecordingFile.DoWork += uploadRecordingFile_DoWork;
             uploadRecordingFile.WorkerSupportsCancellation = true;
             uploadRecordingFile.RunWorkerAsync();
-            #endregion 
+            #endregion
+
         }
 
 
@@ -181,42 +173,8 @@ namespace newCRM
         /// <param name="e"></param>
         private void uploadRecordingFile_DoWork(object sender, DoWorkEventArgs e)
         {
-            #region 遍历工作目录下的record
-            var fileList = Directory.GetFileSystemEntries(System.IO.Path.GetFullPath(".."));
-            DirectoryInfo dir = new DirectoryInfo(System.IO.Path.GetFullPath(".."));
-            foreach (DirectoryInfo info in dir.GetDirectories())
-            {
-                foreach (DirectoryInfo item in info.GetDirectories())
-                {
-                    var isRecord = item.ToString().IndexOf("record");
-                    if (isRecord == 0)
-                    {
-                        foreach (FileInfo fil in item.GetFiles())
-                        {
-                            var json = httpHellper.PostRequest(fil.FullName);
-                            if (!string.IsNullOrEmpty(json))
-                            {
-                                var result = JsonHelper.JsonDeserialize<ConstDefault.result>(json);
-                                if (result.code == 1)
-                                {
-                                    File.Delete(fil.FullName);
-                                    Debug.WriteLine("[uploadRecordingFile_DoWork]==>>上传成功");
-                                }
-                                else
-                                {
-                                    Debug.WriteLine(result.msg);
-                                }
-                            }
-                            else
-                            {
-                                Debug.WriteLine("[uploadRecordingFile_DoWork]==>>上传失败");
-                            }
-                        }
-                    }
-                }
-            }
-            #endregion
-
+            updateOldFileRecordDirectory();
+            updateNewFileRecordDirectory();
             #region 遍历工作目录、录音文件目录
             //var fileList = Directory.GetFiles(VoipHelper.recordPath);
 
@@ -253,6 +211,98 @@ namespace newCRM
             #endregion
 
         }
+        /// <summary>
+        /// 遍历上传新目录
+        /// </summary>
+        private static void updateNewFileRecordDirectory()
+        {
+            VoipHelper.WriteLog(string.Format("开始上传新目录"));
+
+            var fileLists = Directory.GetFiles(VoipHelper.recordPath);
+            DirectoryInfo dir = new DirectoryInfo(VoipHelper.recordPath);
+            FileInfo[] fils = dir.GetFiles();
+
+            if (fileLists.Length > 0)
+            {
+                foreach (FileInfo item in fils)
+                {
+                    var json = httpHellper.PostRequest(item.FullName);
+                    var call_id = Path.GetFileNameWithoutExtension(item.FullName);
+                    if (!string.IsNullOrEmpty(json))
+                    {
+                        var result = JsonConvert.DeserializeObject<ConstDefault.result>(json);
+                        if (result.code == 1)
+                        {
+                            VoipHelper.WriteLog(string.Format("上传成功 call_id ==>> {0}", call_id));
+                            File.Delete(item.FullName);
+                        }
+                        else
+                        {
+                            VoipHelper.WriteLog(string.Format("上传失败==>> {0} call_id ==>> {1}", result.msg, call_id));
+                        }
+                    }
+                    else
+                    {
+                        VoipHelper.WriteLog(string.Format("上传失败 call_id ==>> {0}", call_id));
+                        Debug.WriteLine("[uploadRecordingFile_DoWork]==>>上传失败");
+                    }
+
+                }
+            }
+        }
+        /// <summary>
+        /// 遍历上传旧目录
+        /// </summary>
+        public static void updateOldFileRecordDirectory()
+        {
+            DirectoryInfo dir = new DirectoryInfo(Path.GetFullPath(".."));
+            VoipHelper.WriteLog(string.Format("开始上传旧目录"));
+            try
+            {
+                foreach (DirectoryInfo info in dir.GetDirectories())
+                {
+                    foreach (DirectoryInfo item in info.GetDirectories())
+                    {
+                        var isRecord = item.ToString().IndexOf("record");
+                        if (isRecord == 0)
+                        {
+                            foreach (FileInfo fil in item.GetFiles())
+                            {
+                                var json = httpHellper.PostRequest(fil.FullName);
+                                var call_id = Path.GetFileNameWithoutExtension(fil.FullName);
+                                if (!string.IsNullOrEmpty(json))
+                                {
+                                    var result = JsonConvert.DeserializeObject<ConstDefault.result>(json);
+                                    if (result.code == 1)
+                                    {
+
+                                        VoipHelper.WriteLog(string.Format("上传成功 call_id ==>> {0}", call_id));
+                                        File.Delete(fil.FullName);
+                                        Debug.WriteLine("[uploadRecordingFile_DoWork]==>>上传成功");
+                                    }
+                                    else
+                                    {
+                                        VoipHelper.WriteLog(string.Format("上传失败==>> {0} call_id ==>> {1}", result.msg, call_id));
+                                        Debug.WriteLine(result.msg);
+                                    }
+                                }
+                                else
+                                {
+                                    VoipHelper.WriteLog(string.Format("上传失败 call_id ==>> {0}", call_id));
+                                    Debug.WriteLine("[uploadRecordingFile_DoWork]==>>上传失败");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception err)
+            {
+                VoipHelper.WriteLog(string.Format("上传出错==>> {0}", err));
+                return;
+            }
+        }
+
         #region 盒子事件监听
         private void MainWindow_SourceInitialized(object sender, EventArgs e)
         {
@@ -409,6 +459,10 @@ namespace newCRM
             if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.LeftAlt) && Keyboard.IsKeyDown(Key.I))
             {
                 browser.GetBrowser().ShowDevTools();
+            }
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown( Key.LeftAlt) && Keyboard.IsKeyDown(Key.O))
+            {
+                Process.Start("explorer.exe", VoipHelper.crmRoot);
             }
         }
     }
