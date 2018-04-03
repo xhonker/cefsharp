@@ -108,6 +108,7 @@ namespace newCRM
             uploadRecordingFile.RunWorkerAsync();
             #endregion
 
+
         }
 
 
@@ -173,7 +174,7 @@ namespace newCRM
         /// <param name="e"></param>
         private void uploadRecordingFile_DoWork(object sender, DoWorkEventArgs e)
         {
-            updateOldFileRecordDirectory();
+            //updateOldFileRecordDirectory();
             updateNewFileRecordDirectory();
             #region 遍历工作目录、录音文件目录
             //var fileList = Directory.GetFiles(VoipHelper.recordPath);
@@ -212,7 +213,7 @@ namespace newCRM
 
         }
         /// <summary>
-        /// 遍历上传新目录
+        /// 遍历新目录
         /// </summary>
         private static void updateNewFileRecordDirectory()
         {
@@ -226,32 +227,42 @@ namespace newCRM
             {
                 foreach (FileInfo item in fils)
                 {
-                    var json = httpHellper.PostRequest(item.FullName);
-                    var call_id = Path.GetFileNameWithoutExtension(item.FullName);
-                    if (!string.IsNullOrEmpty(json))
-                    {
-                        var result = JsonConvert.DeserializeObject<ConstDefault.result>(json);
-                        if (result.code == 1)
-                        {
-                            VoipHelper.WriteLog(string.Format("上传成功 call_id ==>> {0}", call_id));
-                            File.Delete(item.FullName);
-                        }
-                        else
-                        {
-                            VoipHelper.WriteLog(string.Format("上传失败==>> {0} call_id ==>> {1}", result.msg, call_id));
-                        }
-                    }
-                    else
-                    {
-                        VoipHelper.WriteLog(string.Format("上传失败 call_id ==>> {0}", call_id));
-                        Debug.WriteLine("[uploadRecordingFile_DoWork]==>>上传失败");
-                    }
+                   updateFile(item.FullName);
 
                 }
             }
         }
         /// <summary>
-        /// 遍历上传旧目录
+        /// 上传文件
+        /// </summary>
+        /// <param name="fileName">文件路径</param>
+        public static void updateFile(string fileName)
+        {
+            var json = httpHellper.PostRequest(fileName);
+            var call_id = Path.GetFileNameWithoutExtension(fileName);
+
+            if (!string.IsNullOrEmpty(json))
+            {
+                var result = JsonConvert.DeserializeObject<ConstDefault.result>(json);
+                if (result.code == 1)
+                {
+                    VoipHelper.WriteLog(string.Format("上传成功 call_id ==>> {0}", call_id));
+                    File.Delete(fileName);
+                }
+                else
+                {
+                    VoipHelper.WriteLog(string.Format("上传失败==>> {0} call_id ==>> {1}", result.msg, call_id));
+                    return;
+                }
+            }
+            else
+            {
+                VoipHelper.WriteLog(string.Format("上传失败 call_id ==>> {0}", call_id));
+                return;
+            }
+        }
+        /// <summary>
+        /// 遍历旧目录
         /// </summary>
         public static void updateOldFileRecordDirectory()
         {
@@ -268,29 +279,7 @@ namespace newCRM
                         {
                             foreach (FileInfo fil in item.GetFiles())
                             {
-                                var json = httpHellper.PostRequest(fil.FullName);
-                                var call_id = Path.GetFileNameWithoutExtension(fil.FullName);
-                                if (!string.IsNullOrEmpty(json))
-                                {
-                                    var result = JsonConvert.DeserializeObject<ConstDefault.result>(json);
-                                    if (result.code == 1)
-                                    {
-
-                                        VoipHelper.WriteLog(string.Format("上传成功 call_id ==>> {0}", call_id));
-                                        File.Delete(fil.FullName);
-                                        Debug.WriteLine("[uploadRecordingFile_DoWork]==>>上传成功");
-                                    }
-                                    else
-                                    {
-                                        VoipHelper.WriteLog(string.Format("上传失败==>> {0} call_id ==>> {1}", result.msg, call_id));
-                                        Debug.WriteLine(result.msg);
-                                    }
-                                }
-                                else
-                                {
-                                    VoipHelper.WriteLog(string.Format("上传失败 call_id ==>> {0}", call_id));
-                                    Debug.WriteLine("[uploadRecordingFile_DoWork]==>>上传失败");
-                                }
+                                updateFile(fil.FullName);
                             }
                         }
                     }
@@ -450,7 +439,7 @@ namespace newCRM
             this.Activate();
         }
         /// <summary>
-        /// 浏览器按键事件 调用开发者工具
+        /// 浏览器按键事件 调用开发者工具/打开日志目录
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
