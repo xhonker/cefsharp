@@ -49,6 +49,7 @@ namespace newCRM
         {
             if (VoipHelper.playHandle <= 0)
             {
+                VoipHelper.domicToLine(0);
                 VoipHelper.playHandle = VoipHelper.PlayVoice(VoipHelper.PLAYFILEPATH);
             }
         }
@@ -83,8 +84,9 @@ namespace newCRM
         /// <summary>
         /// 判断设备是否正常
         /// </summary>
-        public void deviceIsNormal()
+        public void deviceIsNormal(string userID)
         {
+            VoipHelper.userID = userID;
             ConstDefault.resultToJs deviceIdNormal = new ConstDefault.resultToJs();
             deviceIdNormal.action = ConstDefault.device_is_normal;
             deviceIdNormal.deviceIsNormal = VoipHelper.deviceState;
@@ -129,7 +131,7 @@ namespace newCRM
                             riskprompt();
                             break;
                         case ConstDefault.device_is_normal:
-                            deviceIsNormal();
+                            deviceIsNormal(jsonMsg.payload.userID);
                             break;
                         default:
                             break;

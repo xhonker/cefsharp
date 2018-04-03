@@ -20,7 +20,7 @@ namespace 上海CRM管理系统.Tools
                 VoipHelper.StopVoice(VoipHelper.playHandle);
                 ConstDefault.isMissed = false;
                 VoipHelper.OffOnHook(1);
-            } 
+            }
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace 上海CRM管理系统.Tools
             {
                 MainWindow.form.Topmost = false;
             }
-            VoipHelper.OffOnHook(0); 
+            VoipHelper.OffOnHook(0);
         }
 
         /// <summary>
@@ -48,6 +48,15 @@ namespace 上海CRM管理系统.Tools
         public static void getCallID(string phone)
         {
             VoipHelper.WriteLog(string.Format("获取到来电号码 ==>> {0}", phone));
+            #region 号码小于7位屏蔽
+            if (phone.Length < 7)
+            {
+                VoipHelper.WriteLog(string.Format("来电小于7位号码  号码为==>>", phone));
+                VoipHelper.StopVoice(VoipHelper.playHandle);
+                VoipHelper.OffOnHook(0);
+                return;
+            }
+            #endregion
             if (ConstDefault.isCalling)
             {
                 return;
@@ -58,15 +67,7 @@ namespace 上海CRM管理系统.Tools
             MainWindow.form.Activate();
             MainWindow.form.Topmost = true;
             VoipHelper.playHandle = VoipHelper.PlayVoice(VoipHelper.callBell);
-            #region 号码小于7位屏蔽
-            //if (phone.Length < 7)
-            //{
-            //    VoipHelper.StopVoice(VoipHelper.playHandle);
-            //    VoipHelper.OffOnHook(0);
-            //    VoipHelper.lineToSpk(0);
-            //    return;
-            //}
-            #endregion
+
             VoipHelper.callId = tools.GetCallId();
 
             ConstDefault.resultToJs getCallId = new ConstDefault.resultToJs();
@@ -82,8 +83,6 @@ namespace 上海CRM管理系统.Tools
                     if (ConstDefault.isMissed) // 如果是未接，30秒后 挂断。 因为 停止呼入时间有问题。 
                     {
                         VoipHelper.WriteLog(string.Format("来电30秒未处理"));
-                        MainWindow.form.Topmost = false;
-                        ConstDefault.isCalling = false; // 重置状态
                         VoipHelper.StopVoice(VoipHelper.playHandle);
                         VoipHelper.OffOnHook(0);
                     }
@@ -169,6 +168,7 @@ namespace 上海CRM管理系统.Tools
                     VoipHelper.WriteLog(string.Format("软摘机"));
                     VoipHelper.StopVoice(VoipHelper.playHandle);
                     VoipHelper.lineToSpk(1);
+                    VoipHelper.domicToLine(1);
                     if (VoipHelper.callState == VoipHelper.telState.IN)
                     {
                         ConstDefault.isMissed = false;
@@ -190,10 +190,9 @@ namespace 上海CRM管理系统.Tools
                     VoipHelper.WriteLog(string.Format("软挂机"));
                     VoipHelper.lineToSpk(0);
                     VoipHelper.offHookCallNumber = null;
-                    VoipHelper.StopVoice(VoipHelper.playHandle);
+                    VoipHelper.playHandle = VoipHelper.StopVoice(VoipHelper.playHandle);
                     ConstDefault.isBySelf = true;
                     ConstDefault.isCalling = false;
-
                     ConstDefault.resultToJs resultToJs = new ConstDefault.resultToJs();
                     resultToJs.action = ConstDefault.phone_idel;
                     tools.resultToJavascript(resultToJs);
@@ -207,6 +206,7 @@ namespace 上海CRM管理系统.Tools
             catch (Exception err)
             {
                 VoipHelper.WriteLog(string.Format("软摘软挂错误==>>{0}", err));
+                return;
             }
         }
     }
