@@ -82,7 +82,13 @@ namespace 上海CRM管理系统.Tools
         /// </summary>
         public class result
         {
+            /// <summary>
+            /// 1 全部上传完成   200 分片上传完成  400 分片需要重新上传 500 上传失败 501 通话ID不存在
+            /// </summary>
             public int code;
+            /// <summary>
+            /// 消息
+            /// </summary>
             public string msg;
         }
         /// <summary>
@@ -157,36 +163,6 @@ namespace 上海CRM管理系统.Tools
             /// 通话结束时间
             /// </summary>
             public string call_end;
-        }
-        /// <summary>
-        /// 消息通知
-        /// </summary>
-        public class newsMessage
-        {
-            /// <summary>
-            /// 标题
-            /// </summary>
-            public string title;
-            /// <summary>
-            /// 内容
-            /// </summary>
-            public string content;
-            /// <summary>
-            /// 消息ID
-            /// </summary>
-            public int id;
-            /// <summary>
-            /// 链接
-            /// </summary>
-            public string link;
-            /// <summary>
-            /// 消息时间
-            /// </summary>
-            public string time;
-            /// <summary>
-            /// 消息来源
-            /// </summary>
-            public string from_user;
         }
     }
 

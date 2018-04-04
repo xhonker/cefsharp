@@ -83,8 +83,14 @@ namespace 上海CRM管理系统.Tools
                     if (ConstDefault.isMissed) // 如果是未接，30秒后 挂断。 因为 停止呼入时间有问题。 
                     {
                         VoipHelper.WriteLog(string.Format("来电30秒未处理"));
-                        VoipHelper.StopVoice(VoipHelper.playHandle);
-                        VoipHelper.OffOnHook(0);
+                        VoipHelper.StopVoice(VoipHelper.playHandle); // 单独挂断处理不行，因为有摘机才有挂机事件。
+                        ConstDefault.isBySelf = false;
+                        ConstDefault.isCalling = false;
+                        MainWindow.form.Topmost = false;
+                        VoipHelper.lineToSpk(0);
+                        ConstDefault.resultToJs resultToJs = new ConstDefault.resultToJs();
+                        resultToJs.action = ConstDefault.phone_idel;
+                        tools.resultToJavascript(resultToJs);
                     }
                 }
                 );
