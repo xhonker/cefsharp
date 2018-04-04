@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Text;
-using System.Runtime.Serialization.Json;
-using System.IO;
 using newCRM.Tools;
 using newCRM;
 using Newtonsoft.Json;
+using System.Runtime.InteropServices;
 
 namespace 上海CRM管理系统.Tools
 {
@@ -84,7 +82,7 @@ namespace 上海CRM管理系统.Tools
         /// </summary>
         public class result
         {
-            public int code ;
+            public int code;
             public string msg;
         }
         /// <summary>
@@ -268,5 +266,47 @@ namespace 上海CRM管理系统.Tools
             };
             timer.Enabled = true;
         }
+        /// <summary>
+        /// 阻止系统休眠||关闭显示器||强制系统处于工作状态
+        /// </summary>
+        /// <param name="flags"></param>
+        /// <returns></returns>
+        [DllImport("kernel32.dll")]
+        static extern uint SetThreadExecutionState(ExecutionFlag flags);
+        [Flags]
+        enum ExecutionFlag : uint
+        {
+            /// <summary>
+            /// 强制系统处于工作状态
+            /// </summary>
+            System = 0x00000001,
+            /// <summary>
+            /// 强制开启显示器
+            /// </summary>
+            Display = 0x00000002,
+            /// <summary>
+            /// 重置状态
+            /// </summary>
+            Continus = 0x80000000,
+        }
+        /// <summary>
+        /// 阻止系统电源计划
+        /// </summary>
+        /// <param name="includeDisplay">是否阻止关闭显示器</param>
+        public static void PreventSleep(bool includeDisplay = true)
+        {
+            if (includeDisplay)
+                SetThreadExecutionState(ExecutionFlag.System | ExecutionFlag.Display | ExecutionFlag.Continus);
+            else
+                SetThreadExecutionState(ExecutionFlag.System | ExecutionFlag.Continus);
+        }
+        /// <summary>
+        /// 恢复系统电源计划
+        /// </summary>
+        public static void ResotreSleep()
+        {
+            SetThreadExecutionState(ExecutionFlag.Continus);
+        }
+
     }
 }

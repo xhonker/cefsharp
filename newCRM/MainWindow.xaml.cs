@@ -14,6 +14,7 @@ using System.ComponentModel;
 using CefSharp;
 using System.Configuration;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace newCRM
 {
@@ -43,18 +44,42 @@ namespace newCRM
         /// 处理CRM系统消息 引用this
         /// </summary>
         public static MainWindow form;
+        /// <summary>
+        /// 禁止多开 激活已打开的窗口
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <param name="cmdShow"></param>
+        /// <returns></returns>
+        [DllImport("User32.dll")]
+        private static extern bool ShowWindowAsync(IntPtr hWnd, int cmdShow);
 
         public MainWindow()
         {
+            #region 禁止多开
+            string pName = "上海CRM管理系统";
+
+            Process[] pro = Process.GetProcessesByName(pName);
+            if (pro.Length > 0)
+            {
+                MessageBox.Show("软件已经在运行了", "消息提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                Application.Current.Shutdown();
+                ShowWindowAsync(pro[0].MainWindowHandle, 9);
+                return;
+            }
+            #endregion
+
             InitializeComponent();
             form = this;
             App.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             this.SourceInitialized += MainWindow_SourceInitialized;//注册盒子监听事件
         }
+
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             string serverAddress = ConfigurationManager.AppSettings["server"];
+
             #region browser
             #region 初始化环境 禁用gpu 防止闪烁
             var setting = new CefSharp.CefSettings();
@@ -108,7 +133,7 @@ namespace newCRM
             uploadRecordingFile.RunWorkerAsync();
             #endregion
 
-
+            tools.PreventSleep();
         }
 
 
@@ -165,6 +190,7 @@ namespace newCRM
         private void Window_Closed(object sender, EventArgs e)
         {
             VoipHelper.windowClose();
+            tools.ResotreSleep();
             BriSDKLib.QNV_Event(0, BriSDKLib.QNV_EVENT_UNREGWND, (int)hwnd, "", new StringBuilder(0), 0);
         }
         /// <summary>
