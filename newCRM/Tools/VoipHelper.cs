@@ -8,6 +8,10 @@ namespace newCRM.Tools
     public class VoipHelper
     {
         /// <summary>
+        /// 软摘/挂错误
+        /// </summary>
+        public static bool isHookError = false;
+        /// <summary>
         /// 设备状态
         /// </summary>
         public static bool deviceState = true;
@@ -22,6 +26,10 @@ namespace newCRM.Tools
         {
             OUT, IN
         }
+        /// <summary>
+        /// 日志写入锁
+        /// </summary>
+        public static System.Threading.ReaderWriterLockSlim logWriteLock = new System.Threading.ReaderWriterLockSlim();
         /// <summary>
         /// 电话拨打状态
         /// </summary>
@@ -268,36 +276,33 @@ namespace newCRM.Tools
         {
             return BriSDKLib.QNV_General(0, BriSDKLib.QNV_GENERAL_STOPREFUSE, 0, "");
         }
+
         /// <summary>
         /// 写入日志
         /// </summary>
         /// <param name="strLog"></param>
         public static void WriteLog(string strLog)
         {
-            FileStream fs;
-            StreamWriter sw;
-            string FilePath = string.Format("{0}/{1}/{2}", crmLog, DateTime.Now.Year, DateTime.Now.Month);
-            string FileName = string.Format("{0}/{1}", FilePath, DateTime.Now.ToString("dd") + ".log");
-            createDirectory(FilePath);
-            if (File.Exists(FileName))
+            try
             {
-                using (fs = new FileStream(FileName, FileMode.Append, FileAccess.Write))
+                string FilePath = string.Format("{0}\\{1}\\{2}", crmLog, DateTime.Now.Year, DateTime.Now.Month);
+                string FileName = string.Format("{0}\\{1}", FilePath, DateTime.Now.ToString("dd") + ".log");
+                createDirectory(FilePath);
+                string logContent = string.Format("{0}\r\n", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff") + " ---- " + strLog);
+                try
                 {
-                    using (sw = new StreamWriter(fs))
-                    {
-                        sw.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " ---- " + strLog);
-                    }
-                };
+                    logWriteLock.EnterWriteLock();
+                    File.AppendAllText(FileName, logContent);
+                }
+                finally
+                {
+                    logWriteLock.ExitWriteLock();
+                }
             }
-            else
+            catch (Exception err)
             {
-                using (fs = new FileStream(FileName, FileMode.Create, FileAccess.Write))
-                {
-                    using (sw = new StreamWriter(fs))
-                    {
-                        sw.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " ---- " + strLog);
-                    }
-                };
+                WriteLog(string.Format("写入错误 ==>> {0}", err.ToString()));
+                return;
             }
         }
     }
