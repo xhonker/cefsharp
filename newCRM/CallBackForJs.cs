@@ -101,7 +101,6 @@ namespace newCRM
 
             if (!string.IsNullOrEmpty(msg))
             {
-                //var jsonMsg = JsonHelper.JsonDeserialize<DispacthMsg>(msg);
                 var jsonMsg = JsonConvert.DeserializeObject<DispacthMsg>(msg);
                 Debug.WriteLine(JsonConvert.DeserializeObject<DispacthMsg>(msg));
                 VoipHelper.WriteLog(string.Format("Js To Client ==>> {0}", msg));

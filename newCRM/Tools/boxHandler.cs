@@ -51,7 +51,7 @@ namespace 上海CRM管理系统.Tools
             #region 号码小于7位屏蔽
             if (phone.Length < 7)
             {
-                VoipHelper.WriteLog(string.Format("来电小于7位号码  号码为==>>", phone));
+                VoipHelper.WriteLog(string.Format("来电小于7位号码  号码为 ==>> {0}", phone));
                 VoipHelper.StopVoice(VoipHelper.playHandle);
                 VoipHelper.OffOnHook(0);
                 return;
@@ -163,6 +163,7 @@ namespace 上海CRM管理系统.Tools
         {
             try
             {
+
                 if (result == 1)//摘机
                 {
                     VoipHelper.WriteLog(string.Format("软摘机"));
@@ -193,18 +194,29 @@ namespace 上海CRM管理系统.Tools
                     VoipHelper.playHandle = VoipHelper.StopVoice(VoipHelper.playHandle);
                     ConstDefault.isBySelf = true;
                     ConstDefault.isCalling = false;
-                    ConstDefault.resultToJs resultToJs = new ConstDefault.resultToJs();
-                    resultToJs.action = ConstDefault.phone_idel;
-                    tools.resultToJavascript(resultToJs);
 
                     if (VoipHelper.callState == VoipHelper.telState.IN)
                     {
                         MainWindow.form.Topmost = false;
                     }
+                    if (VoipHelper.isHookError)
+                    {
+                        VoipHelper.isHookError = false;
+                        return;
+                    }
+
+                    ConstDefault.resultToJs resultToJs = new ConstDefault.resultToJs();
+                    resultToJs.action = ConstDefault.phone_idel;
+                    tools.resultToJavascript(resultToJs);
                 }
             }
             catch (Exception err)
             {
+                VoipHelper.isHookError = true;
+                ConstDefault.resultToJs errToJs = new ConstDefault.resultToJs();
+                errToJs.action = ConstDefault.phone_idel;
+                tools.resultToJavascript(errToJs);
+                VoipHelper.OffOnHook(0);
                 VoipHelper.WriteLog(string.Format("软摘软挂错误==>>{0}", err));
                 return;
             }
