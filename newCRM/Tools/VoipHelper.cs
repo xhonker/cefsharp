@@ -283,18 +283,26 @@ namespace newCRM.Tools
         /// <param name="strLog"></param>
         public static void WriteLog(string strLog)
         {
-            string FilePath = string.Format("{0}\\{1}\\{2}", crmLog, DateTime.Now.Year, DateTime.Now.Month);
-            string FileName = string.Format("{0}\\{1}", FilePath, DateTime.Now.ToString("dd") + ".log");
-            createDirectory(FilePath);
-            string logContent = string.Format("{0}\r\n", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff") + " ---- " + strLog);
             try
             {
-                logWriteLock.EnterWriteLock();
-                File.AppendAllText(FileName, logContent);
+                string FilePath = string.Format("{0}\\{1}\\{2}", crmLog, DateTime.Now.Year, DateTime.Now.Month);
+                string FileName = string.Format("{0}\\{1}", FilePath, DateTime.Now.ToString("dd") + ".log");
+                createDirectory(FilePath);
+                string logContent = string.Format("{0}\r\n", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff") + " ---- " + strLog);
+                try
+                {
+                    logWriteLock.EnterWriteLock();
+                    File.AppendAllText(FileName, logContent);
+                }
+                finally
+                {
+                    logWriteLock.ExitWriteLock();
+                }
             }
-            finally
+            catch (Exception err)
             {
-                logWriteLock.ExitWriteLock();
+                WriteLog(string.Format("写入错误 ==>> {0}", err.ToString()));
+                return;
             }
         }
     }

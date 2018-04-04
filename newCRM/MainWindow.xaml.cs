@@ -227,7 +227,7 @@ namespace newCRM
             {
                 foreach (FileInfo item in fils)
                 {
-                   updateFile(item.FullName);
+                    updateFile(item.FullName);
 
                 }
             }
@@ -247,6 +247,11 @@ namespace newCRM
                 if (result.code == 1)
                 {
                     VoipHelper.WriteLog(string.Format("上传成功 call_id ==>> {0}", call_id));
+                    File.Delete(fileName);
+                }
+                else if (result.code == 501)
+                {
+                    VoipHelper.WriteLog(string.Format("通话ID不存在==>> {0}", call_id));
                     File.Delete(fileName);
                 }
                 else
@@ -449,7 +454,7 @@ namespace newCRM
             {
                 browser.GetBrowser().ShowDevTools();
             }
-            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown( Key.LeftAlt) && Keyboard.IsKeyDown(Key.O))
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.LeftAlt) && Keyboard.IsKeyDown(Key.O))
             {
                 Process.Start("explorer.exe", VoipHelper.crmRoot);
             }
