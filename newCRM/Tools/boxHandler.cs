@@ -68,14 +68,14 @@ namespace 上海CRM管理系统.Tools
             MainWindow.form.Topmost = true;
             VoipHelper.playHandle = VoipHelper.PlayVoice(VoipHelper.callBell);
 
-            VoipHelper.callId = tools.GetCallId();
+            VoipHelper.callId = Utils.GetCallId();
 
-            ConstDefault.resultToJs getCallId = new ConstDefault.resultToJs();
-            getCallId.action = ConstDefault.phone_ringing;
+            ConstDefault.retToJs getCallId = new ConstDefault.retToJs();
+            getCallId.action = ConstDefault.PHONE_RINGING;
             getCallId.phoneNumber = phone;
-            tools.resultToJavascript(getCallId);
+            Utils.resultToJavascript(getCallId);
 
-            tools.SetTimeOut(1000 * 30, new Action(() =>
+            Utils.SetTimeOut(1000 * 30, new Action(() =>
              {
                  MainWindow.form.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal,
                 (ThreadStart)delegate ()
@@ -83,8 +83,14 @@ namespace 上海CRM管理系统.Tools
                     if (ConstDefault.isMissed) // 如果是未接，30秒后 挂断。 因为 停止呼入时间有问题。 
                     {
                         VoipHelper.WriteLog(string.Format("来电30秒未处理"));
-                        VoipHelper.StopVoice(VoipHelper.playHandle);
-                        VoipHelper.OffOnHook(0);
+                        VoipHelper.StopVoice(VoipHelper.playHandle); // 单独挂断处理不行，因为有摘机才有挂机事件。
+                        ConstDefault.isBySelf = false;
+                        ConstDefault.isCalling = false;
+                        MainWindow.form.Topmost = false;
+                        VoipHelper.lineToSpk(0);
+                        ConstDefault.retToJs resultToJs = new ConstDefault.retToJs();
+                        resultToJs.action = ConstDefault.PHONE_IDEL;
+                        Utils.resultToJavascript(resultToJs);
                     }
                 }
                 );
@@ -97,9 +103,9 @@ namespace 上海CRM管理系统.Tools
         public static void busy()
         {
             VoipHelper.WriteLog(string.Format("忙音"));
-            ConstDefault.resultToJs busy = new ConstDefault.resultToJs();
-            busy.action = ConstDefault.line_is_BusyOrHangup;
-            tools.resultToJavascript(busy);
+            ConstDefault.retToJs busy = new ConstDefault.retToJs();
+            busy.action = ConstDefault.LINE_IS_BUSYORHANGUP;
+            Utils.resultToJavascript(busy);
         }
 
         /// <summary>
@@ -108,9 +114,9 @@ namespace 上海CRM管理系统.Tools
         public static void remoteHook()
         {
             VoipHelper.WriteLog(string.Format("对方接听"));
-            ConstDefault.resultToJs remoteHook = new ConstDefault.resultToJs();
-            remoteHook.action = ConstDefault.phone_calling;
-            tools.resultToJavascript(remoteHook);
+            ConstDefault.retToJs remoteHook = new ConstDefault.retToJs();
+            remoteHook.action = ConstDefault.PHONE_CALLING;
+            Utils.resultToJavascript(remoteHook);
         }
 
         /// <summary>
@@ -121,9 +127,9 @@ namespace 上海CRM管理系统.Tools
             VoipHelper.WriteLog(string.Format("远程挂机"));
             VoipHelper.playHandle = VoipHelper.StopVoice(VoipHelper.playHandle);
             ConstDefault.isBySelf = false;
-            ConstDefault.resultToJs remoteHang = new Tools.ConstDefault.resultToJs();
-            remoteHang.action = ConstDefault.line_is_BusyOrHangup;
-            tools.resultToJavascript(remoteHang);
+            ConstDefault.retToJs remoteHang = new Tools.ConstDefault.retToJs();
+            remoteHang.action = ConstDefault.LINE_IS_BUSYORHANGUP;
+            Utils.resultToJavascript(remoteHang);
         }
 
         /// <summary>
@@ -145,13 +151,13 @@ namespace 上海CRM管理系统.Tools
             if (result == 0 && VoipHelper.offHookCallNumber != null)
             {
                 VoipHelper.WriteLog(string.Format("电话摘机检查拨号结束==>> {0}", VoipHelper.offHookCallNumber));
-                VoipHelper.callId = tools.GetCallId();
-                ConstDefault.resultToJs ringBack = new ConstDefault.resultToJs();
-                ringBack.action = ConstDefault.phone_dialing;
+                VoipHelper.callId = Utils.GetCallId();
+                ConstDefault.retToJs ringBack = new ConstDefault.retToJs();
+                ringBack.action = ConstDefault.PHONE_DIALING;
                 ringBack.phoneNumber = VoipHelper.offHookCallNumber;
                 ringBack.isOffHook = true;
                 VoipHelper.isOffHookCall = true;
-                tools.resultToJavascript(ringBack);
+                Utils.resultToJavascript(ringBack);
             }
         }
 
@@ -174,16 +180,16 @@ namespace 上海CRM管理系统.Tools
                     {
                         ConstDefault.isMissed = false;
 
-                        ConstDefault.resultToJs resultToJs = new ConstDefault.resultToJs();
-                        resultToJs.action = ConstDefault.phone_calling;
-                        tools.resultToJavascript(resultToJs);
+                        ConstDefault.retToJs resultToJs = new ConstDefault.retToJs();
+                        resultToJs.action = ConstDefault.PHONE_CALLING;
+                        Utils.resultToJavascript(resultToJs);
                     }
                     else
                     {
-                        ConstDefault.resultToJs resultToJs = new ConstDefault.resultToJs();
-                        resultToJs.action = ConstDefault.phone_dialing;
+                        ConstDefault.retToJs resultToJs = new ConstDefault.retToJs();
+                        resultToJs.action = ConstDefault.PHONE_DIALING;
                         resultToJs.phoneNumber = VoipHelper.callNumber;
-                        tools.resultToJavascript(resultToJs);
+                        Utils.resultToJavascript(resultToJs);
                     }
                 }
                 else //挂机
@@ -205,17 +211,17 @@ namespace 上海CRM管理系统.Tools
                         return;
                     }
 
-                    ConstDefault.resultToJs resultToJs = new ConstDefault.resultToJs();
-                    resultToJs.action = ConstDefault.phone_idel;
-                    tools.resultToJavascript(resultToJs);
+                    ConstDefault.retToJs resultToJs = new ConstDefault.retToJs();
+                    resultToJs.action = ConstDefault.PHONE_IDEL;
+                    Utils.resultToJavascript(resultToJs);
                 }
             }
             catch (Exception err)
             {
                 VoipHelper.isHookError = true;
-                ConstDefault.resultToJs errToJs = new ConstDefault.resultToJs();
-                errToJs.action = ConstDefault.phone_idel;
-                tools.resultToJavascript(errToJs);
+                ConstDefault.retToJs errToJs = new ConstDefault.retToJs();
+                errToJs.action = ConstDefault.PHONE_IDEL;
+                Utils.resultToJavascript(errToJs);
                 VoipHelper.OffOnHook(0);
                 VoipHelper.WriteLog(string.Format("软摘软挂错误==>>{0}", err));
                 return;

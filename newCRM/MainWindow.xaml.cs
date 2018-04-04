@@ -57,9 +57,8 @@ namespace newCRM
         {
             #region 禁止多开
             string pName = "上海CRM管理系统";
-
             Process[] pro = Process.GetProcessesByName(pName);
-            if (pro.Length > 0)
+            if (pro.Length > 1)
             {
                 MessageBox.Show("软件已经在运行了", "消息提示", MessageBoxButton.OK, MessageBoxImage.Error);
                 Application.Current.Shutdown();
@@ -133,7 +132,7 @@ namespace newCRM
             uploadRecordingFile.RunWorkerAsync();
             #endregion
 
-            tools.PreventSleep();
+            Utils.PreventSleep();
         }
 
 
@@ -190,7 +189,7 @@ namespace newCRM
         private void Window_Closed(object sender, EventArgs e)
         {
             VoipHelper.windowClose();
-            tools.ResotreSleep();
+            Utils.ResotreSleep();
             BriSDKLib.QNV_Event(0, BriSDKLib.QNV_EVENT_UNREGWND, (int)hwnd, "", new StringBuilder(0), 0);
         }
         /// <summary>
@@ -269,7 +268,7 @@ namespace newCRM
 
             if (!string.IsNullOrEmpty(json))
             {
-                var result = JsonConvert.DeserializeObject<ConstDefault.result>(json);
+                var result = JsonConvert.DeserializeObject<ConstDefault.resultFromServer>(json);
                 if (result.code == 1)
                 {
                     VoipHelper.WriteLog(string.Format("上传成功 call_id ==>> {0}", call_id));
@@ -470,7 +469,7 @@ namespace newCRM
             this.Activate();
         }
         /// <summary>
-        /// 浏览器按键事件 调用开发者工具/打开日志目录
+        /// 浏览器按键事件 调用开发者工具ctrl+alt+i/打开日志目录ctrl+alt+o
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>

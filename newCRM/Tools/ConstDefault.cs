@@ -15,54 +15,54 @@ namespace 上海CRM管理系统.Tools
         /// <summary>
         /// 正在拨号中
         /// </summary>
-        public const string phone_dialing = "PHONE_DIALING";
+        public const string PHONE_DIALING = "PHONE_DIALING";
         /// <summary>
         /// 通话中
         /// </summary>
-        public const string phone_calling = "PHONE_CALLING";
+        public const string PHONE_CALLING = "PHONE_CALLING";
         /// <summary>
         /// 来电
         /// </summary>
-        public const string phone_ringing = "PHONE_RINGING";
+        public const string PHONE_RINGING = "PHONE_RINGING";
         /// <summary>
         /// 挂断
         /// </summary>
-        public const string phone_idel = "PHONE_IDEL";
+        public const string PHONE_IDEL = "PHONE_IDEL";
         /// <summary>
         /// 判断线路忙音或者远程挂机信号
         /// </summary>
-        public const string line_is_BusyOrHangup = "LINE_IS_BUSYORHANGUP";
+        public const string LINE_IS_BUSYORHANGUP = "LINE_IS_BUSYORHANGUP";
         #endregion
 
         #region js传过来的
         /// <summary>
         /// 接电话
         /// </summary>
-        public const string phone_pick_up = "PHONE_PICK_UP";
+        public const string PHONE_PICK_UP = "PHONE_PICK_UP";
         /// <summary>
         /// 打电话
         /// </summary>
-        public const string phone_make_call = "PHONE_MAKE_CALL";
+        public const string PHONE_MAKE_CALL = "PHONE_MAKE_CALL";
         /// <summary>
         /// 挂电话
         /// </summary>
-        public const string phone_hang_up = "PHONE_HANG_UP";
+        public const string PHONE_HANG_UP = "PHONE_HANG_UP";
         /// <summary>
         ///系统消息
         /// </summary>
-        public const string notification = "NOTIFICATION";
+        public const string NOTIFICATION = "NOTIFICATION";
         /// <summary>
         /// 上一通是否评价
         /// </summary>
-        public const string phone_is_evaluate = "PHONE_IS_EVALUATE";
+        public const string PHONE_IS_EVALUATE = "PHONE_IS_EVALUATE";
         /// <summary>
         /// 风险提示
         /// </summary>
-        public const string phone_riskprompt = "PHONE_RISKPROMPT";
+        public const string PHONE_RISKPROMPT = "PHONE_RISKPROMPT";
         /// <summary>
         /// 设备是否正常
         /// </summary>
-        public const string device_is_normal = "DEVICE_IS_NORMAL";
+        public const string DEVICE_IS_NORMAL = "DEVICE_IS_NORMAL";
         #endregion
 
         /// <summary>
@@ -80,15 +80,21 @@ namespace 上海CRM管理系统.Tools
         /// <summary>
         /// 服务器返回结构
         /// </summary>
-        public class result
+        public class resultFromServer
         {
+            /// <summary>
+            /// 1 全部上传完成   200 分片上传完成  400 分片需要重新上传 500 上传失败 501 通话ID不存在
+            /// </summary>
             public int code;
+            /// <summary>
+            /// 消息
+            /// </summary>
             public string msg;
         }
         /// <summary>
         /// 返回给JS的消息体
         /// </summary>
-        public class resultToJs
+        public class retToJs
         {
             /// <summary>
             /// 行为
@@ -158,42 +164,12 @@ namespace 上海CRM管理系统.Tools
             /// </summary>
             public string call_end;
         }
-        /// <summary>
-        /// 消息通知
-        /// </summary>
-        public class newsMessage
-        {
-            /// <summary>
-            /// 标题
-            /// </summary>
-            public string title;
-            /// <summary>
-            /// 内容
-            /// </summary>
-            public string content;
-            /// <summary>
-            /// 消息ID
-            /// </summary>
-            public int id;
-            /// <summary>
-            /// 链接
-            /// </summary>
-            public string link;
-            /// <summary>
-            /// 消息时间
-            /// </summary>
-            public string time;
-            /// <summary>
-            /// 消息来源
-            /// </summary>
-            public string from_user;
-        }
     }
 
     /// <summary>
     /// 常用工具库
     /// </summary>
-    public class tools
+    public class Utils
     {
         /// <summary>  
         /// 获取时间戳  
@@ -201,7 +177,7 @@ namespace 上海CRM管理系统.Tools
         /// <returns></returns>  
         public static long GetTimeStamp()
         {
-            System.DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new System.DateTime(1970, 1, 1, 0, 0, 0, 0));
+            DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new System.DateTime(1970, 1, 1, 0, 0, 0, 0));
             long time = (DateTime.Now.Ticks - startTime.Ticks) / 10000;   //除10000调整为13位      
             return time;
         }
@@ -217,16 +193,16 @@ namespace 上海CRM管理系统.Tools
         /// 返回给JS
         /// </summary>
         /// <param name="result"></param>
-        public static void resultToJavascript(ConstDefault.resultToJs result)
+        public static void resultToJavascript(ConstDefault.retToJs result)
         {
             var msg = new DispacthMsg();
             var payload = new Payload();
             msg.action = result.action;
-            if (result.action == ConstDefault.phone_dialing || result.action == ConstDefault.phone_ringing)
+            if (result.action == ConstDefault.PHONE_DIALING || result.action == ConstDefault.PHONE_RINGING)
             {
                 payload.callId = VoipHelper.callId.ToString();
             }
-            else if (result.action == ConstDefault.phone_idel)
+            else if (result.action == ConstDefault.PHONE_IDEL)
             {
                 payload.isBySelf = ConstDefault.isBySelf;
             }

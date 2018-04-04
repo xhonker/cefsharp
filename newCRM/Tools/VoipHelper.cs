@@ -132,7 +132,7 @@ namespace newCRM.Tools
 
             string FilePath = string.Format("{0}/{1}/{2}", crmLog, DateTime.Now.Year, DateTime.Now.Month);
             string FileName = string.Format("{0}/{1}", FilePath, DateTime.Now.ToString("dd") + ".log");
-            httpHellper.uploadLog(userID, FileName);
+            httpHellper.upLogFile(userID, FileName);
         }
         /// <summary>
         /// 打开1/关闭0 麦克风到电话线
@@ -246,7 +246,7 @@ namespace newCRM.Tools
         {
             if (!string.IsNullOrEmpty(callId))
             {
-                var path = string.Format(recordPath + "\\{0}.wav", callId.ToString().Trim());
+                var path = string.Format("{0}\\{1}.wav", recordPath, callId.ToString().Trim());
                 recordingHanle = BriSDKLib.QNV_RecordFile(VoipIndex, BriSDKLib.QNV_RECORD_FILE_START, BriSDKLib.BRI_WAV_FORMAT_PCM8K16B, BriSDKLib.RECORD_MASK_ECHO | BriSDKLib.RECORD_MASK_AGC, path);
 
                 if (recordingHanle < 0)//录音失败

@@ -30,10 +30,10 @@
     <UpdateRequired>true</UpdateRequired>
     <MapFileExtensions>false</MapFileExtensions>
     <InstallUrl>http://crm.lanyikj.cn/</InstallUrl>
-    <MinimumRequiredVersion>1.0.0.111</MinimumRequiredVersion>
+    <MinimumRequiredVersion>1.0.0.120</MinimumRequiredVersion>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
-    <ApplicationRevision>112</ApplicationRevision>
+    <ApplicationRevision>121</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>true</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>

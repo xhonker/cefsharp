@@ -16,7 +16,7 @@ namespace newCRM
         /// <returns>{code:number,msg:string}</returns>
         public void startTalk(string phone)
         {
-            VoipHelper.callId = tools.GetCallId();
+            VoipHelper.callId = Utils.GetCallId();
             VoipHelper.callState = VoipHelper.telState.OUT;
             VoipHelper.callNumber = phone;
             VoipHelper.Call(phone);
@@ -87,10 +87,10 @@ namespace newCRM
         public void deviceIsNormal(string userID)
         {
             VoipHelper.userID = userID;
-            ConstDefault.resultToJs deviceIdNormal = new ConstDefault.resultToJs();
-            deviceIdNormal.action = ConstDefault.device_is_normal;
+            ConstDefault.retToJs deviceIdNormal = new ConstDefault.retToJs();
+            deviceIdNormal.action = ConstDefault.DEVICE_IS_NORMAL;
             deviceIdNormal.deviceIsNormal = VoipHelper.deviceState;
-            tools.resultToJavascript(deviceIdNormal);
+            Utils.resultToJavascript(deviceIdNormal);
         }
         /// <summary>
         /// 统一消息接收
@@ -102,34 +102,34 @@ namespace newCRM
             if (!string.IsNullOrEmpty(msg))
             {
                 var jsonMsg = JsonConvert.DeserializeObject<DispacthMsg>(msg);
-                Debug.WriteLine(JsonConvert.DeserializeObject<DispacthMsg>(msg));
+                Debug.WriteLine(jsonMsg);
                 VoipHelper.WriteLog(string.Format("Js To Client ==>> {0}", msg));
                 if (jsonMsg.action != null)
                 {
                     switch (jsonMsg.action)
                     {
-                        case ConstDefault.phone_hang_up:
+                        case ConstDefault.PHONE_HANG_UP:
                             stopTalk();
                             break;
-                        case ConstDefault.phone_make_call:
+                        case ConstDefault.PHONE_MAKE_CALL:
                             startTalk(jsonMsg.payload.phoneNumber);
                             break;
-                        case ConstDefault.phone_pick_up:
+                        case ConstDefault.PHONE_PICK_UP:
                             answerCall();
                             break;
-                        case ConstDefault.notification:
+                        case ConstDefault.NOTIFICATION:
                             if (!string.IsNullOrEmpty(jsonMsg.payload.content))
                             {
                                 systemNewMessage(jsonMsg.payload.content);
                             }
                             break;
-                        case ConstDefault.phone_is_evaluate:
+                        case ConstDefault.PHONE_IS_EVALUATE:
                             phoneIsEvaluate(jsonMsg.payload.isEvaluate);
                             break;
-                        case ConstDefault.phone_riskprompt:
+                        case ConstDefault.PHONE_RISKPROMPT:
                             riskprompt();
                             break;
-                        case ConstDefault.device_is_normal:
+                        case ConstDefault.DEVICE_IS_NORMAL:
                             deviceIsNormal(jsonMsg.payload.userID);
                             break;
                         default:
