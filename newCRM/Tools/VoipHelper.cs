@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Text;
 using System.IO;
-using 上海CRM管理系统.Tools;
 
 namespace newCRM.Tools
 {
+    /// <summary>
+    /// 盒子相关操作库
+    /// </summary>
     public class VoipHelper
     {
         /// <summary>
@@ -27,10 +29,6 @@ namespace newCRM.Tools
             OUT, IN
         }
         /// <summary>
-        /// 日志写入锁
-        /// </summary>
-        public static System.Threading.ReaderWriterLockSlim logWriteLock = new System.Threading.ReaderWriterLockSlim();
-        /// <summary>
         /// 电话拨打状态
         /// </summary>
         public static telState callState;
@@ -49,7 +47,7 @@ namespace newCRM.Tools
         /// <summary>
         /// 来电铃声
         /// </summary>
-        public static string callBell = AppDomain.CurrentDomain.BaseDirectory + "//1670.wav";
+        public static string callBell = AppDomain.CurrentDomain.BaseDirectory + "1670.wav";
         /// <summary>
         /// 播放风险提示
         /// </summary>
@@ -61,7 +59,7 @@ namespace newCRM.Tools
         /// <summary>
         /// 录音文件路径
         /// </summary>
-        public static string recordPath;
+        public static string recordPath = crmRoot + "\\record";
         /// <summary>
         /// 通话ID
         /// </summary>
@@ -70,14 +68,10 @@ namespace newCRM.Tools
         /// 初始化通道
         /// </summary>
         public static short VoipIndex = 0;
-        /// <summary>
-        /// crm日志和录音存放目录
-        /// </summary>
-        public static string crmRoot;
-        /// <summary>
-        /// 所有交互日志
-        /// </summary>
-        public static string crmLog;
+        ///// <summary>
+        ///// crm日志和录音存放目录
+        ///// </summary>
+        public static string crmRoot = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\crm"; // 目录在 用户目录\\AppData\\Roaming 
         /// <summary>
         /// 登录用户账号
         /// </summary>
@@ -93,19 +87,14 @@ namespace newCRM.Tools
             BriSDKLib.QNV_SetDevCtrl(VoipIndex, BriSDKLib.QNV_CTRL_LINEOUT, 1);//打开线路输出功能
             BriSDKLib.QNV_SetDevCtrl(VoipIndex, BriSDKLib.QNV_CTRL_DOPLAYTOSPK, 1);//打开播放的语音到耳机
             BriSDKLib.QNV_SetDevCtrl(VoipIndex, BriSDKLib.QNV_CTRL_PLAYTOLINE, 1);//打开播放的语音到线路
-
             BriSDKLib.QNV_SetParam(VoipIndex, BriSDKLib.QNV_PARAM_AM_MIC, 0);//获取插在设备上的麦克风增益大小//
             BriSDKLib.QNV_SetParam(VoipIndex, BriSDKLib.QNV_PARAM_AM_SPKOUT, 10);//设置插在设备上的耳机音量等级大小
             BriSDKLib.QNV_SetParam(VoipIndex, BriSDKLib.QNV_PARAM_AM_LINEOUT, 15);//设置播放语音到线路的音量等级大小//
             BriSDKLib.QNV_SetParam(VoipIndex, BriSDKLib.QNV_PARAM_AM_LINEIN, 7);//电话线路信号强
-
             BriSDKLib.QNV_SetParam(VoipIndex, BriSDKLib.QNV_PARAM_AM_DOPLAY, 15);
 
-            crmRoot = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\crm"; // 目录在 用户目录\\AppData\\Roaming 
-            crmLog = crmRoot + "\\log";
-            recordPath = crmRoot + "\\record";
             createDirectory(crmRoot);
-            createDirectory(crmLog);
+            createDirectory(Utils.crmLog);
             createDirectory(recordPath);
         }
         /// <summary>
@@ -129,10 +118,7 @@ namespace newCRM.Tools
             OffOnHook(0);
             EndRecord();
             CloseDevice();
-
-            string FilePath = string.Format("{0}/{1}/{2}", crmLog, DateTime.Now.Year, DateTime.Now.Month);
-            string FileName = string.Format("{0}/{1}", FilePath, DateTime.Now.ToString("dd") + ".log");
-            httpHellper.upLogFile(userID, FileName);
+            httpHellper.upLogFile(userID, Utils.logFileName);
         }
         /// <summary>
         /// 打开1/关闭0 麦克风到电话线
@@ -235,7 +221,6 @@ namespace newCRM.Tools
                     MainWindow.uploadRecordingFile.RunWorkerAsync();
                 }
             }
-
         }
         /// <summary>
         /// 开始录音
@@ -251,13 +236,12 @@ namespace newCRM.Tools
 
                 if (recordingHanle < 0)//录音失败
                 {
-                    WriteLog("录音失败");
+                    Utils.WriteLog("录音失败");
                     BriSDKLib.QNV_RecordFile(VoipIndex, BriSDKLib.QNV_RECORD_FILE_STOPALL, 0, 0, "0");
                     OffOnHook(0);
                     return -1;
                 }
             }
-
             return recordingHanle;
         }
         /// <summary>
@@ -275,35 +259,6 @@ namespace newCRM.Tools
         public static int stopCusttentIncoming()
         {
             return BriSDKLib.QNV_General(0, BriSDKLib.QNV_GENERAL_STOPREFUSE, 0, "");
-        }
-
-        /// <summary>
-        /// 写入日志
-        /// </summary>
-        /// <param name="strLog"></param>
-        public static void WriteLog(string strLog)
-        {
-            try
-            {
-                string FilePath = string.Format("{0}\\{1}\\{2}", crmLog, DateTime.Now.Year, DateTime.Now.Month);
-                string FileName = string.Format("{0}\\{1}", FilePath, DateTime.Now.ToString("dd") + ".log");
-                createDirectory(FilePath);
-                string logContent = string.Format("{0}\r\n", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff") + " ---- " + strLog);
-                try
-                {
-                    logWriteLock.EnterWriteLock();
-                    File.AppendAllText(FileName, logContent);
-                }
-                finally
-                {
-                    logWriteLock.ExitWriteLock();
-                }
-            }
-            catch (Exception err)
-            {
-                WriteLog(string.Format("写入错误 ==>> {0}", err.ToString()));
-                return;
-            }
         }
     }
 }

@@ -4,9 +4,8 @@ using System.IO;
 using System.Net;
 using RestSharp;
 using Newtonsoft.Json;
-using newCRM.Tools;
 
-namespace 上海CRM管理系统.Tools
+namespace newCRM.Tools
 {
     /// <summary>
     /// HTTP请求
@@ -101,7 +100,7 @@ namespace 上海CRM管理系统.Tools
                         }
                         else
                         {
-                            VoipHelper.WriteLog(string.Format("上传失败==>> {0}", upDataFileResult));
+                            Utils.WriteLog(string.Format("上传失败==>> {0}", upDataFileResult));
                             return "";
                         }
                     }
@@ -144,7 +143,7 @@ namespace 上海CRM管理系统.Tools
                 System.Diagnostics.Debug.WriteLine(response.Content);
                 if (response.StatusCode == HttpStatusCode.NotFound)
                 {
-                    VoipHelper.WriteLog(string.Format("上传出错 ==>> {0}", response.Content.ToString()));
+                    Utils.WriteLog(string.Format("上传出错 ==>> {0}", response.Content.ToString()));
                     return "";
                 }
 
@@ -152,7 +151,7 @@ namespace 上海CRM管理系统.Tools
             }
             catch (Exception err)
             {
-                VoipHelper.WriteLog(string.Format("上传出错 ==>> {0}", err));
+                Utils.WriteLog(string.Format("上传出错 ==>> {0}", err));
                 return "";
             }
 
@@ -163,10 +162,14 @@ namespace 上海CRM管理系统.Tools
         /// <param name="username">员工工号</param>
         /// <param name="file">文件路径</param>
         /// <returns></returns>
-        public static string upLogFile(string username, string file)
+        public static void upLogFile(string username, string file)
         {
             try
             {
+                if (username == null)
+                {
+                    return;
+                }
                 string serverAddress = ConfigurationManager.AppSettings["server"];
                 var client = new RestClient(serverAddress);
                 var requst = new RestRequest("/call/post/save-file", Method.POST);
@@ -176,19 +179,19 @@ namespace 上海CRM管理系统.Tools
                 IRestResponse response = client.Execute(requst);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    VoipHelper.WriteLog(string.Format("日志上传成功"));
-                    return response.Content;
+                    Utils.WriteLog(string.Format("日志上传成功"));
+                    return;
                 }
                 else
                 {
-                    VoipHelper.WriteLog(string.Format("日志上传失败 ==>> {0} username ==>> {1} filePath ==>> {2}", response.Content, username, file));
-                    return "";
+                    Utils.WriteLog(string.Format("日志上传失败 ==>> {0} username ==>> {1} filePath ==>> {2}", response.Content, username, file));
+                    return;
                 }
             }
             catch (Exception err)
             {
-                VoipHelper.WriteLog(string.Format("日志上传失败==>> {0}", err));
-                return err.ToString();
+                Utils.WriteLog(string.Format("日志上传失败==>> {0}", err.ToString()));
+                return;
             }
         }
     }

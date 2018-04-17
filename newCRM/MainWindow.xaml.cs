@@ -8,17 +8,14 @@ using CefSharp.Wpf;
 using newCRM.Tools;
 using System.IO;
 using System.Diagnostics;
-using 上海CRM管理系统.Tools;
 using System.Threading;
 using System.ComponentModel;
 using CefSharp;
 using System.Configuration;
 using Newtonsoft.Json;
-using System.Linq;
 
 namespace newCRM
 {
-
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
@@ -52,7 +49,9 @@ namespace newCRM
         /// <returns></returns>
         [DllImport("User32.dll")]
         private static extern bool ShowWindowAsync(IntPtr hWnd, int cmdShow);
-
+        /// <summary>
+        /// 主程序入口
+        /// </summary>
         public MainWindow()
         {
             #region 禁止多开
@@ -73,12 +72,15 @@ namespace newCRM
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             this.SourceInitialized += MainWindow_SourceInitialized;//注册盒子监听事件
         }
-
-
+        /// <summary>
+        /// 窗口加载
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            Utils.WriteLog("Window_Loaded");
             string serverAddress = ConfigurationManager.AppSettings["server"];
-
             #region browser
             #region 初始化环境 禁用gpu 防止闪烁
             var setting = new CefSharp.CefSettings();
@@ -134,9 +136,6 @@ namespace newCRM
 
             Utils.PreventSleep();
         }
-
-
-
         /// <summary>
         /// 解决input框无法输入中文的BUG
         /// </summary>
@@ -242,7 +241,7 @@ namespace newCRM
         /// </summary>
         private static void updateNewFileRecordDirectory()
         {
-            VoipHelper.WriteLog(string.Format("开始上传新目录"));
+            Utils.WriteLog(string.Format("开始上传新目录"));
 
             var fileLists = Directory.GetFiles(VoipHelper.recordPath);
             DirectoryInfo dir = new DirectoryInfo(VoipHelper.recordPath);
@@ -271,23 +270,23 @@ namespace newCRM
                 var result = JsonConvert.DeserializeObject<ConstDefault.resultFromServer>(json);
                 if (result.code == 1)
                 {
-                    VoipHelper.WriteLog(string.Format("上传成功 call_id ==>> {0}", call_id));
+                    Utils.WriteLog(string.Format("上传成功 call_id ==>> {0}", call_id));
                     File.Delete(fileName);
                 }
                 else if (result.code == 501)
                 {
-                    VoipHelper.WriteLog(string.Format("通话ID不存在==>> {0}", call_id));
+                    Utils.WriteLog(string.Format("通话ID不存在==>> {0}", call_id));
                     File.Delete(fileName);
                 }
                 else
                 {
-                    VoipHelper.WriteLog(string.Format("上传失败==>> {0} call_id ==>> {1}", result.msg, call_id));
+                    Utils.WriteLog(string.Format("上传失败==>> {0} call_id ==>> {1}", result.msg, call_id));
                     return;
                 }
             }
             else
             {
-                VoipHelper.WriteLog(string.Format("上传失败 call_id ==>> {0}", call_id));
+                Utils.WriteLog(string.Format("上传失败 call_id ==>> {0}", call_id));
                 return;
             }
         }
@@ -297,7 +296,7 @@ namespace newCRM
         public static void updateOldFileRecordDirectory()
         {
             DirectoryInfo dir = new DirectoryInfo(Path.GetFullPath(".."));
-            VoipHelper.WriteLog(string.Format("开始上传旧目录"));
+            Utils.WriteLog(string.Format("开始上传旧目录"));
             try
             {
                 foreach (DirectoryInfo info in dir.GetDirectories())
@@ -317,7 +316,7 @@ namespace newCRM
             }
             catch (Exception err)
             {
-                VoipHelper.WriteLog(string.Format("上传出错==>> {0}", err));
+                Utils.WriteLog(string.Format("上传出错==>> {0}", err));
                 return;
             }
         }
@@ -390,11 +389,15 @@ namespace newCRM
         }
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
+            MessageBox.Show(e.ExceptionObject.ToString(), "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            Utils.WriteLog(string.Format("CurrentDomain_UnhandledException ==>> {0}", e.ExceptionObject.ToString()));
             return;
         }
 
         private void Current_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
+            MessageBox.Show(e.Exception.ToString(), "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            Utils.WriteLog(string.Format("Current_DispatcherUnhandledException ==>> {0}", e.Exception.ToString()));
             return;
         }
 

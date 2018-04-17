@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using CefSharp;
-using CefSharp.Wpf;
+﻿using CefSharp;
 
-namespace 上海CRM管理系统.Tools
+namespace newCRM.Tools
 {
     public class browerDownLoad : IDownloadHandler
     {

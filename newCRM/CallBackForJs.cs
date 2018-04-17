@@ -1,15 +1,16 @@
 ﻿using System.Diagnostics;
 using newCRM.Tools;
-using 上海CRM管理系统.Tools;
 using Newtonsoft.Json;
 
 namespace newCRM
 {
+    /// <summary>
+    /// 注册JS回调
+    /// </summary>
     internal class CallBackForJs
     {
         /// <summary>
         /// 开始通话
-        /// code =200 成功 其他失败
         /// </summary>
         /// <param name="phone">手机号</param>
         /// <param name="callId">通话ID</param>
@@ -24,7 +25,6 @@ namespace newCRM
         }
         /// <summary>
         /// 接听来电
-        /// code =200 成功 其他失败
         /// </summary>
         /// <param name="callId">通话ID</param>
         /// <returns>{code:number,msg:string}</returns>
@@ -34,8 +34,7 @@ namespace newCRM
         }
 
         /// <summary>
-        /// 挂断 
-        /// code =200 成功 其他失败
+        /// 挂断
         /// </summary>
         /// <returns>{code:number,msg:string}</returns>
         public void stopTalk()
@@ -103,7 +102,7 @@ namespace newCRM
             {
                 var jsonMsg = JsonConvert.DeserializeObject<DispacthMsg>(msg);
                 Debug.WriteLine(jsonMsg);
-                VoipHelper.WriteLog(string.Format("Js To Client ==>> {0}", msg));
+                Utils.WriteLog(string.Format("Js To Client ==>> {0}", msg));
                 if (jsonMsg.action != null)
                 {
                     switch (jsonMsg.action)

@@ -1,4 +1,4 @@
-﻿namespace 上海CRM管理系统.Tools
+﻿namespace newCRM.Tools
 {
     /// <summary>
     /// 返回给前端的json
