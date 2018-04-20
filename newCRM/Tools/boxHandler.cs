@@ -105,6 +105,7 @@ namespace newCRM.Tools
             ConstDefault.retToJs busy = new ConstDefault.retToJs();
             busy.action = ConstDefault.LINE_IS_BUSYORHANGUP;
             Utils.resultToJavascript(busy);
+            MainWindow.form.Activate();
         }
 
         /// <summary>
@@ -129,6 +130,7 @@ namespace newCRM.Tools
             ConstDefault.retToJs remoteHang = new Tools.ConstDefault.retToJs();
             remoteHang.action = ConstDefault.LINE_IS_BUSYORHANGUP;
             Utils.resultToJavascript(remoteHang);
+            MainWindow.form.Activate();
         }
 
         /// <summary>

@@ -31,10 +31,10 @@
     <UpdateRequired>true</UpdateRequired>
     <MapFileExtensions>false</MapFileExtensions>
     <InstallUrl>http://crm.lanyikj.cn/</InstallUrl>
-    <MinimumRequiredVersion>1.0.0.125</MinimumRequiredVersion>
+    <MinimumRequiredVersion>1.0.0.127</MinimumRequiredVersion>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
-    <ApplicationRevision>125</ApplicationRevision>
+    <ApplicationRevision>128</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>true</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
@@ -205,8 +205,6 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="newCRM_1_TemporaryKey.pfx" />
-    <None Include="newCRM_TemporaryKey.pfx" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

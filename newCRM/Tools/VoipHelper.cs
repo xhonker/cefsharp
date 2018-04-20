@@ -57,10 +57,6 @@ namespace newCRM.Tools
         /// </summary>
         public static int recordingHanle;
         /// <summary>
-        /// 录音文件路径
-        /// </summary>
-        public static string recordPath = crmRoot + "\\record";
-        /// <summary>
         /// 通话ID
         /// </summary>
         public static string callId;
@@ -72,6 +68,10 @@ namespace newCRM.Tools
         ///// crm日志和录音存放目录
         ///// </summary>
         public static string crmRoot = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\crm"; // 目录在 用户目录\\AppData\\Roaming 
+        /// <summary>
+        /// 录音文件路径
+        /// </summary>
+        public static string recordPath = crmRoot + "\\record";
         /// <summary>
         /// 登录用户账号
         /// </summary>

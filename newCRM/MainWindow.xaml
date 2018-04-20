@@ -6,13 +6,15 @@
         xmlns:local="clr-namespace:newCRM"
         mc:Ignorable="d"
         Title="览益CRM" Height="680" Width="1210"
-        Loaded="Window_Loaded" Closed="Window_Closed"
+        Loaded="Window_Loaded"
+        Closed="Window_Closed"
         Activated="Window_Activated"
         Deactivated="Window_Deactivated"
         WindowStartupLocation="CenterScreen"
         Icon="assets/icon.ico" 
         MinHeight="680"
         MinWidth="1210"
+        Closing="Window_Closing"
         >
     <Window.Resources>
         <Style x:Key="btn_close" TargetType="Button"> 

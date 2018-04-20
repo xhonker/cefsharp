@@ -487,5 +487,23 @@ namespace newCRM
                 Process.Start("explorer.exe", VoipHelper.crmRoot);
             }
         }
+        /// <summary>
+        /// 二次确认关闭系统
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            var isCloseWindow = MessageBox.Show("是否退出软件", "消息", MessageBoxButton.YesNo, MessageBoxImage.Information, MessageBoxResult.No);
+            if (isCloseWindow == MessageBoxResult.Yes)
+            {
+                e.Cancel = false;
+            }
+            else if (isCloseWindow == MessageBoxResult.No)
+            {
+                e.Cancel = true;
+            }
+
+        }
     }
 }
